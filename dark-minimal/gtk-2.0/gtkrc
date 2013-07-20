@@ -58,11 +58,25 @@ style "bordered" {
     }
 }
 
+style "control" {
+    base[NORMAL] = "#bbbbbb"
+    bg[NORMAL] = "#bbbbbb"
+}
+
+style "entry" {
+    base[NORMAL] = "#111111"
+    bg[NORMAL] = "#222222"
+}
+
 class "GtkWidget" style "default"
 widget_class "*.<GtkLabel>" style "inactivetext"
 widget_class "*.<GtkCellLayout>" style "inactivetext"
 widget_class "*.<GtkMenu>" style "bordered"
 widget_class "*.<GtkButton>" style "bordered"
+widget_class "*.<GtkPaned>" style "control"
+widget_class "*.<GtkHPaned>" style "control"
+widget_class "*.<GtkEntry>" style "entry"
+widget_class "*.<GtkTextView>" style "entry"
 
 gtk-button-images=0
 gtk-cursor-blink = 0

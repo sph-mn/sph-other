@@ -58,8 +58,8 @@ GtkNotebook tab {
 }
 
 GtkNotebook tab:active {
-  font-weight: bold;
-  background-color: @bg-selected;
+    font-weight: bold;
+    background-color: @bg-selected;
 }
 
 .button {
