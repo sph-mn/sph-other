@@ -1,0 +1,9 @@
+[X-GNOME-Metatheme]
+Name=dark-minimal
+Type=X-GNOME-Metatheme
+Encoding=UTF-8
+GtkTheme=dark-minimal
+MetacityTheme=dark-minimal
+IconTheme=HighContrast
+CursorTheme=Adwaita
+CursorSize=24

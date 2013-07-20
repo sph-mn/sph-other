@@ -1,0 +1,72 @@
+style "default"
+{
+    xthickness = 0
+    ythickness = 0
+
+    GtkButton::default_border = { 0, 0, 0, 0 }
+    GtkButton::default_outside_border = { 0, 0, 0, 0 }
+    GtkEntry::cursor_aspect_ratio = 0.1
+    GtkEntry::cursor_color = "#008800"
+    GtkHSV::focus-line-pattern = "\0"
+    GtkMenuBar::internal_padding = 0
+    GtkMenuBar::shadow_type = GTK_SHADOW_NONE
+    GtkPaned::handle_size = 6
+    GtkRange::slider_width = 16
+    GtkRange::stepper-size = 16
+    GtkRange::trough_border = 0
+    GtkSpinButton::shadow_type = GTK_SHADOW_NONE
+    GtkStatusbar::shadow_type = GTK_SHADOW_NONE
+    GtkTextView::cursor_aspect_ratio = 0.1
+    GtkTextView::cursor_color = "#008800"
+    GtkTreeView::expander-size = 16
+    GtkWidget::focus-line-pattern = "\4\2"
+    GtkWidget::focus-line-width = 0
+    GtkWidget::focus-padding = 1
+    GtkWidget::interior_focus = 0
+    GtkWidget::link-color = "#000060"
+    GtkWidget::visited-link-color = "#600000"
+
+    base[ACTIVE] = "#111111"
+    base[INSENSITIVE] = "#cccccc"
+    base[NORMAL] = "#000000"
+    base[PRELIGHT] = "#000000"
+    base[SELECTED] = "#111111"
+    bg[ACTIVE] = "#111111"
+    bg[INSENSITIVE] = "#cccccc"
+    bg[NORMAL] = "#000000"
+    bg[PRELIGHT] = "#000000"
+    bg[SELECTED] = "#000000"
+    fg[ACTIVE] = "#bbbbbb"
+    fg[INSENSITIVE] = "#222222"
+    fg[NORMAL] = "#777777"
+    fg[PRELIGHT] = "#cccccc"
+    fg[SELECTED] = "#bbbbbb"
+    text[ACTIVE] = "#bbbbbb"
+    text[INSENSITIVE] = "#222222"
+    text[NORMAL] = "#777777"
+    text[PRELIGHT] = "#cccccc"
+    text[SELECTED] = "#bbbbbb"
+}
+
+style "inactivetext" {
+    engine "hcengine" {}
+}
+
+style "bordered" {
+    engine "hcengine" {
+	edge_thickness = 0
+    }
+}
+
+class "GtkWidget" style "default"
+widget_class "*.<GtkLabel>" style "inactivetext"
+widget_class "*.<GtkCellLayout>" style "inactivetext"
+widget_class "*.<GtkMenu>" style "bordered"
+widget_class "*.<GtkButton>" style "bordered"
+
+gtk-button-images=0
+gtk-cursor-blink = 0
+gtk-font-name="Envy R 6"
+gtk-icon-sizes = "panel-menu=12,12:panel=12,12:gtk-button=12,12:gtk-large-toolbar=12,12"
+gtk-icon-theme-name="HighContrast"
+gtk-menu-images=0
