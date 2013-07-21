@@ -60,6 +60,8 @@ GtkNotebook tab {
 GtkNotebook tab:active {
     font-weight: bold;
     background-color: @bg-selected;
+    border-left-width: 1px;
+    border-right-width: 1px;
 }
 
 .button {
