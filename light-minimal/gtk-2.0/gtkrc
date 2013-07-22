@@ -40,12 +40,12 @@ style "default"
     fg[INSENSITIVE] = "#dddddd"
     fg[NORMAL] = "#000000"
     fg[PRELIGHT] = "#888888"
-    fg[SELECTED] = "#444444"
+    fg[SELECTED] = "#4444aa"
     text[ACTIVE] = "#444444"
     text[INSENSITIVE] = "#dddddd"
     text[NORMAL] = "#000000"
     text[PRELIGHT] = "#888888"
-    text[SELECTED] = "#444444"
+    text[SELECTED] = "#4444aa"
 }
 
 style "inactivetext" {
@@ -80,7 +80,7 @@ widget_class "*.<GtkTextView>" style "entry"
 
 gtk-button-images=0
 gtk-cursor-blink = 0
-gtk-font-name="Envy R 7"
+gtk-font-name="Dina 8"
 gtk-icon-sizes = "panel-menu=12,12:panel=12,12:gtk-button=12,12:gtk-large-toolbar=12,12"
 gtk-icon-theme-name="HighContrast"
 gtk-menu-images=0
