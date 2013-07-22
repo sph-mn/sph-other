@@ -1,9 +1,9 @@
-@define-color selected #bbbbbb;
-@define-color bg #000000;
-@define-color bg-selected #111111;
-@define-color inactive #222222;
-@define-color text #777777;
-@define-color highlight #cccccc;
+@define-color selected #444444;
+@define-color bg #ffffff;
+@define-color bg-selected #eeeeee;
+@define-color inactive #dddddd;
+@define-color text #222222;
+@define-color highlight #888888;
 
 * {
     -EelEditableLabel-cursor-aspect-ratio: 0.1;
@@ -16,20 +16,21 @@
     -GtkWidget-focus-padding: 0;
     -GtkWidget-interior-focus: 0;
     -GtkWidget-link-color: #fcfcfc;
-    -GtkWidget-visited-link-color: #cccccc;
+    -GtkWidget-visited-link-color: @highlight;
 
     /* Nautilus */
     -NautilusIconContainer-frame-text: 1;
 
     /* Pidgin */
     -GtkIMHtml-hyperlink-color: #fcfcfc;
-    -GtkIMHtml-hyperlink-visited-color: #cccccc;
+    -GtkIMHtml-hyperlink-visited-color: @highlight;
     -GtkIMHtml-hyperlink-prelight-color: #fcfcfc;
 
     color: @text;
     border-color: @text;
     border: 0;
     border-style: solid;
+		background-color: @bg;
 }
 
 GtkWidget {
@@ -57,7 +58,7 @@ GtkNotebook tab {
     padding-right: 4px;
 }
 
-GtkNotebook tab:active {
+GtkNotebook tab:active * {
     font-weight: bold;
     background-color: @bg-selected;
     border-left-width: 1px;
