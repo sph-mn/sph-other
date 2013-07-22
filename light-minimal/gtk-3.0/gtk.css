@@ -1,0 +1,78 @@
+@define-color selected #bbbbbb;
+@define-color bg #000000;
+@define-color bg-selected #111111;
+@define-color inactive #222222;
+@define-color text #777777;
+@define-color highlight #cccccc;
+
+* {
+    -EelEditableLabel-cursor-aspect-ratio: 0.1;
+    -EelEditableLabel-cursor-color: #fcfcfc;
+    -GtkRange-stepper-size: 16;
+    -GtkTreeView-expander-size: 16;
+    -GtkWidget-cursor-color: #fcfcfc;
+    -GtkWidget-cursor-aspect-ratio: 0.1;
+    -GtkWidget-focus-line-width: 0;
+    -GtkWidget-focus-padding: 0;
+    -GtkWidget-interior-focus: 0;
+    -GtkWidget-link-color: #fcfcfc;
+    -GtkWidget-visited-link-color: #cccccc;
+
+    /* Nautilus */
+    -NautilusIconContainer-frame-text: 1;
+
+    /* Pidgin */
+    -GtkIMHtml-hyperlink-color: #fcfcfc;
+    -GtkIMHtml-hyperlink-visited-color: #cccccc;
+    -GtkIMHtml-hyperlink-prelight-color: #fcfcfc;
+
+    color: @text;
+    border-color: @text;
+    border: 0;
+    border-style: solid;
+}
+
+GtkWidget {
+    cursor-aspect-ratio: 0.04;
+    cursor-color: @highlight;
+    focus-line-width: 5;
+    focus-padding: 5;
+    interior-focus: FALSE;
+    scroll-arrow-hlength: 16;
+    scroll-arrow-vlength: 16;
+    separator-height: 0;
+    separator-width: 0;
+}
+
+*:hover {
+    background-color: @bg-selected;
+}
+
+*:insensitive {
+    background-color: @inactive;
+}
+
+GtkNotebook tab {
+    padding-left: 4px;
+    padding-right: 4px;
+}
+
+GtkNotebook tab:active {
+    font-weight: bold;
+    background-color: @bg-selected;
+    border-left-width: 1px;
+    border-right-width: 1px;
+}
+
+.button {
+    border-width: 1px;
+}
+
+.button:hover {
+    border-width: 1px;
+}
+
+.entry {
+    background-color: @bg-selected;
+    color: @text;
+}

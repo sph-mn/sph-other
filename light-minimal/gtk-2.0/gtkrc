@@ -1,0 +1,86 @@
+style "default"
+{
+    xthickness = 0
+    ythickness = 0
+
+    GtkButton::default_border = { 0, 0, 0, 0 }
+    GtkButton::default_outside_border = { 0, 0, 0, 0 }
+    GtkEntry::cursor_aspect_ratio = 0.1
+    GtkEntry::cursor_color = "#008800"
+    GtkHSV::focus-line-pattern = "\0"
+    GtkMenuBar::internal_padding = 0
+    GtkMenuBar::shadow_type = GTK_SHADOW_NONE
+    GtkPaned::handle_size = 6
+    GtkRange::slider_width = 16
+    GtkRange::stepper-size = 16
+    GtkRange::trough_border = 0
+    GtkSpinButton::shadow_type = GTK_SHADOW_NONE
+    GtkStatusbar::shadow_type = GTK_SHADOW_NONE
+    GtkTextView::cursor_aspect_ratio = 0.1
+    GtkTextView::cursor_color = "#008800"
+    GtkTreeView::expander-size = 16
+    GtkWidget::focus-line-pattern = "\4\2"
+    GtkWidget::focus-line-width = 0
+    GtkWidget::focus-padding = 1
+    GtkWidget::interior_focus = 0
+    GtkWidget::link-color = "#000060"
+    GtkWidget::visited-link-color = "#600000"
+
+    base[ACTIVE] = "#eeeeee"
+    base[INSENSITIVE] = "#cccccc"
+    base[NORMAL] = "#ffffff"
+    base[PRELIGHT] = "#ffffff"
+    base[SELECTED] = "#eeeeee"
+    bg[ACTIVE] = "#eeeeee"
+    bg[INSENSITIVE] = "#cccccc"
+    bg[NORMAL] = "#ffffff"
+    bg[PRELIGHT] = "#ffffff"
+    bg[SELECTED] = "#ffffff"
+    fg[ACTIVE] = "#444444"
+    fg[INSENSITIVE] = "#dddddd"
+    fg[NORMAL] = "#000000"
+    fg[PRELIGHT] = "#888888"
+    fg[SELECTED] = "#444444"
+    text[ACTIVE] = "#444444"
+    text[INSENSITIVE] = "#dddddd"
+    text[NORMAL] = "#000000"
+    text[PRELIGHT] = "#888888"
+    text[SELECTED] = "#444444"
+}
+
+style "inactivetext" {
+    engine "hcengine" {}
+}
+
+style "bordered" {
+    engine "hcengine" {
+	edge_thickness = 0
+    }
+}
+
+style "control" {
+    base[NORMAL] = "#dddddd"
+    bg[NORMAL] = "#dddddd"
+}
+
+style "entry" {
+    base[NORMAL] = "#eeeeee"
+    bg[NORMAL] = "#dddddd"
+}
+
+class "GtkWidget" style "default"
+widget_class "*.<GtkLabel>" style "inactivetext"
+widget_class "*.<GtkCellLayout>" style "inactivetext"
+widget_class "*.<GtkMenu>" style "bordered"
+widget_class "*.<GtkButton>" style "bordered"
+widget_class "*.<GtkPaned>" style "control"
+widget_class "*.<GtkHPaned>" style "control"
+widget_class "*.<GtkEntry>" style "entry"
+widget_class "*.<GtkTextView>" style "entry"
+
+gtk-button-images=0
+gtk-cursor-blink = 0
+gtk-font-name="Envy R 7"
+gtk-icon-sizes = "panel-menu=12,12:panel=12,12:gtk-button=12,12:gtk-large-toolbar=12,12"
+gtk-icon-theme-name="HighContrast"
+gtk-menu-images=0
