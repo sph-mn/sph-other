@@ -2,7 +2,6 @@ style "default"
 {
     xthickness = 0
     ythickness = 0
-
     GtkButton::default_border = { 0, 0, 0, 0 }
     GtkButton::default_outside_border = { 0, 0, 0, 0 }
     GtkEntry::cursor_aspect_ratio = 0.1
@@ -25,7 +24,6 @@ style "default"
     GtkWidget::interior_focus = 0
     GtkWidget::link-color = "#000060"
     GtkWidget::visited-link-color = "#600000"
-
     base[ACTIVE] = "#111111"
     base[INSENSITIVE] = "#cccccc"
     base[NORMAL] = "#000000"
