@@ -69,6 +69,12 @@ GtkNotebook tab:active * {
     border-color: @text;
 }
 
+GtkScrollbar {
+    border-color: #dddddd;
+    border-width: 1px;
+    border-style: solid;
+}
+
 .button {
     border-width: 1px;
 }

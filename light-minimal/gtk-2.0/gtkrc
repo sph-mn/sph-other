@@ -58,9 +58,15 @@ style "bordered" {
   }
 }
 
-style "control" {
+style "base" {
   base[NORMAL] = "#dddddd"
   bg[NORMAL] = "#dddddd"
+}
+
+style "control" {
+  engine "hcengine" {
+    edge_thickness = 0
+  }
 }
 
 style "entry" {
@@ -73,8 +79,9 @@ widget_class "*.<GtkLabel>" style "inactivetext"
 widget_class "*.<GtkCellLayout>" style "inactivetext"
 widget_class "*.<GtkMenu>" style "bordered"
 widget_class "*.<GtkButton>" style "bordered"
-widget_class "*.<GtkPaned>" style "control"
-widget_class "*.<GtkHPaned>" style "control"
+widget_class "*.<GtkPaned>" style "base"
+widget_class "*.<GtkHPaned>" style "base"
+widget_class "*.<GtkScrollbar>" style "control"
 widget_class "*.<GtkEntry>" style "entry"
 widget_class "*.<GtkTextView>" style "entry"
 
