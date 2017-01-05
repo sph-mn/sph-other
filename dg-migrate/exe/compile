@@ -1,0 +1,17 @@
+#!/bin/bash
+
+export SC_LOAD_PATH=$PWD
+#warnings="-Wunused-label -Wunused-value -Wunused-variable"
+gcc_options="$warnings -Wfatal-errors -std=c11 -O2 -g"
+
+compile_export_1() {
+  sc source/sc/export-1.sc temp/export-1.c
+  if [ $1 ]
+  then
+    astyle temp/export-1.c
+  fi
+  gcc $gcc_options -llmdb temp/export-1.c -o temp/export-1 && chmod -R 755 temp
+}
+
+mkdir -p temp
+compile_export_1 $*
