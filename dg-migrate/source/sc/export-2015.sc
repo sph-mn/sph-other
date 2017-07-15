@@ -1,7 +1,9 @@
-;for an executable that takes the path to a sph-dg version 1 root directory and displays the contained data as s-expressions. format description is displayed at the top of the output
+(define export-2015-description char*
+  "code for an executable that takes the path to a sph-dg version 1 root directory and displays the contained metadata in an s-expression format. format description is displayed at the top of the output.
+   does not depend on the old sph-dg version")
 
 (pre-define debug-log? #t)
-(include-sc "source/sc/foreign/sph" "source/sc/foreign/sph/one" "source/sc/foreign/sph/status")
+(sc-include "source/sc/foreign/sph" "source/sc/foreign/sph/one" "source/sc/foreign/sph/status")
 (pre-include-once stdio-h "stdio.h" inttypes-h "inttypes.h" string-h "string.h" lmdb-h "lmdb.h")
 
 (pre-define bits-type-ide 0
@@ -101,7 +103,7 @@
 (define (get-dg-root-or-exit a-len a) (b8* b32 b8_s**)
   (define dg-root-input b8_s*) (if (= 2 a-len) (set dg-root-input (array-get a 1)) (exit 1))
   (if (not (file-exists? dg-root-input)) (exit 2)) (define dg-root b8*)
-  (if (= 2 (ensure-trailing-slash dg-root-input (address-of dg-root))) (exit 3)) (return dg-root))
+  (ensure-trailing-slash dg-root-input (address-of dg-root)) (return dg-root))
 
 (define (display-export-data txn) (status-t MDB-txn*)
   status-init (define ide->data MDB-cursor*)
@@ -109,14 +111,13 @@
   (define val-key MDB-val) (define val-data MDB-val)
   (status-id-require!
     (mdb-cursor-get ide->data (address-of val-key) (address-of val-data) MDB-FIRST))
-  (define id type-ide type-name b8*) (printf ";intern {hex-id} {hex-byte-data} ...\n")
-  (printf ";id {hex-id}\n") (printf ";alias {hex-id} {hex-target-id}\n")
-  (printf ";extern {hex-id}\n")
-  (printf ";pair {hex-id} {hex-id-left} {hex-id-right} {hex-ordinal-left} {hex-ordinal-right}\n")
+  (define id type-ide) (printf "; (intern {hex-id} {hex-byte} ...)\n")
+  (printf "; (id {hex-id})\n") (printf "; (alias {hex-id} {hex-target-id})\n")
+  (printf "; (extern {hex-id})\n")
+  (printf "; (pair {hex-id} {hex-id-left} {hex-id-right} {hex-ordinal-left} {hex-ordinal-right})\n")
   (while (= MDB-SUCCESS (struct-get status id)) (set id (val-ide-ref val-key))
     (cond
       ( (dg-intern? id) (printf "(intern #x%x" id) (define index b32 0)
-        (define data b8*)
         (while (< index (struct-get val-data mv-size))
           (printf " #x%x" (deref (+ index (convert-type (struct-get val-data mv-data) b8*))))
           (set index (+ index 1)))

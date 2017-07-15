@@ -1,0 +1,109 @@
+#!/usr/bin/guile
+!#
+
+(import (sph base) (sph cli) (rnrs bytevectors) (sph storage dg))
+
+(define import-2015-2017
+  "import the data from a file created with dg-export-2015 in a dg-2017 database.
+   # id translation
+   * type ide:, dg-id-create, memoise old->new
+   * type extern: dg-extern-create, memoise old->new
+   * type intern: dg-intern-create, memoise old->new
+   * type pair: dg-relation-create, translate left/right to new ids
+   * type alias: dg-relation-create with context \"dg-2015-alias\", translate identifiers")
+
+;-- dg-2015 specific
+;
+(define dg-2015-bits-type-ide 0)
+(define dg-2015-bits-type-pair 1)
+(define dg-2015-bits-type-intern 2)
+(define dg-2015-bits-type-extern 3)
+(define dg-2015-bits-type 3)
+(define (dg-2015-intern? id) (= dg-2015-bits-type-intern (logand id dg-2015-bits-type)))
+(define (dg-2015-extern? id) (= dg-2015-bits-type-extern (logand id dg-2015-bits-type)))
+(define (dg-2015-ide? id) (= dg-2015-bits-type-ide (logand id dg-2015-bits-type)))
+(define (dg-2015-pair? id) (= dg-2015-bits-type-pair (logand id dg-2015-bits-type)))
+
+(define (dg-2015-id->type id) "integer -> string:type-name"
+  (cond ((dg-2015-intern? id) "intern") ((dg-2015-pair? id) "pair")
+    ((dg-2015-extern? id) "extern") ((dg-2015-ide? id) "id")))
+
+(define (dg-2015-export-data-each path proc)
+  "string procedure ->
+   read s-expressions from file and call proc for each"
+  (call-with-input-file path
+    (l (source-data)
+      (let loop ((a (read source-data)))
+        (if (not (eof-object? a)) (begin (proc a) (loop (read source-data))))))))
+
+;-- dg-2015-2017
+;
+(define id-old->new (ht-make-eqv 500))
+(define (list-trim-right a b) (drop-while (l (a) (eqv? b a)) (reverse a)))
+
+(define (relation-part-inexistant old-left old-right new-left new-right)
+  (display
+    (string-append
+      (string-join
+        (pair "info: relation part inexistant:"
+          (map (l (a) (if a (number->string a 16) "_"))
+            (list old-left old-right new-left new-right)))
+        " ")
+      " " (dg-2015-id->type old-left) " " (dg-2015-id->type old-right) "\n")))
+
+(define (create-nodes source-path) "create nodes and initialise id-old->new"
+  (dg-txn-call-write
+    (l (txn)
+      (dg-2015-export-data-each source-path
+        (l (a)
+          (let (id-old (first (tail a)))
+            (case (first a)
+              ( (id alias)
+                (let (id-new (dg-id-create txn)) (ht-set! id-old->new id-old (first id-new))))
+              ( (extern)
+                (let (id-new (dg-extern-create txn)) (ht-set! id-old->new id-old (first id-new))))
+              ( (intern)
+                (let
+                  (id-new
+                    (dg-intern-ensure txn
+                      (list (u8-list->bytevector (list-trim-right (tail (tail a)) 0)))))
+                  (ht-set! id-old->new id-old (first id-new))))))))
+      (dg-txn-abort txn))))
+
+(define (create-relations source-path) "create nodes and initialise id-old->new"
+  (dg-txn-call-write
+    (l (txn)
+      (dg-2015-export-data-each source-path
+        (l (a)
+          (let (id-old (first (tail a)))
+            (case (first a)
+              ( (pair)
+                (apply
+                  (l (old-left old-right ordinal-left ordinal-right)
+                    (let
+                      ( (new-left (ht-ref id-old->new old-left))
+                        (new-right (ht-ref id-old->new old-right)))
+                      (if (and new-left new-right)
+                        (dg-relation-ensure txn (list new-left) (list new-right))
+                        (relation-part-inexistant old-left old-right new-left new-right))))
+                  (tail (tail a))))
+              ( (alias)
+                (apply
+                  (l (old-left old-right new-left new-right)
+                    (if (and new-left new-right)
+                      (dg-relation-ensure txn (list new-left)
+                        (list new-right) (dg-intern-ensure txn (list "dg-2015-alias")))
+                      (relation-part-inexistant old-left old-right new-left new-right)))
+                  (append (tail a) (map (l (a) (ht-ref id-old->new a)) (tail a))))))))))))
+
+(define (dg-import-2015-2017 source target-dg-root dry-run? create-database?)
+  (let (target-dg-root (ensure-trailing-slash target-dg-root))
+    (dg-use target-dg-root (create-nodes source) (create-relations source))))
+
+(define (import-2015-2017-cli)
+  (let
+    (options ((cli-create #:options (list-q (dry-run) (create-db) ((source-path target-dg-root))))))
+    (alist-bind options (source-path target-dg-root dry-run create-db)
+      (dg-import-2015-2017 source-path target-dg-root dry-run create-db))))
+
+(import-2015-2017-cli)
