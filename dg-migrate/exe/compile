@@ -6,7 +6,7 @@ gcc_options="$warnings -Wfatal-errors -std=c11 -O2 -g"
 
 compile_export_2015() {
   sc source/sc/export-2015.sc temp/export-2015.c
-  gcc $gcc_options -llmdb temp/export-2015.c -o temp/dg-export-2015 && chmod -R 755 temp &&
+  gcc $gcc_options -llmdb temp/export-2015.c -o exe/dg-export-2015 && chmod -R 755 temp &&
   rm temp/export-2015.c
 }
 
