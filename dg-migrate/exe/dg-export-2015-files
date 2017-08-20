@@ -95,13 +95,13 @@
       (create-relations export-data id-old->new))
     id-old->new))
 
-(define (dg-export-2015-files source-dg-root target-files)
+(define (dg-export-2015-files source-dg-root target-directory)
   "imports into a temporary dg-2017 database for querying, then extracts data from old data model and
    creates it with the new data model in the target database"
   (let*
     ; create temp db
     ( (export-data (dg-export-2015 source-dg-root)) (temp-db (tmpnam))
-      (target-files (ensure-trailing-slash target-files))
+      (target-directory (ensure-trailing-slash target-directory))
       (id-old->new
         (if (file-exists? temp-db) (ht-make-eqv 500) (dg-import-2015-2017 export-data temp-db)))
       (file-info
@@ -136,12 +136,12 @@
                       file file path path))
                   files file-old-paths)))))))
     ; copy old files with names that include tag strings
-    (ensure-directory-structure target-files)
+    (ensure-directory-structure target-directory)
     (each
       (l (a)
         (alist-bind a (tags path file)
           (copy-file path
-            (string-append target-files
+            (string-append target-directory
               (string-join (pair (number->string file 32) (if (null? tags) (list "other") tags))
                 ".")))))
       file-info)
@@ -154,8 +154,8 @@
     "./exe/dg-export-2015" (list dg-root) #f #t))
 
 (define (dg-export-2015-files-cli)
-  (let (options ((cli-create #:options (list-q ((source-dg-root target-files))))))
-    (alist-bind options (source-dg-root target-files)
-      (dg-export-2015-files source-dg-root target-files))))
+  (let (options ((cli-create #:options (list-q ((source-dg-root target-directory))))))
+    (alist-bind options (source-dg-root target-directory)
+      (dg-export-2015-files source-dg-root target-directory))))
 
 (dg-export-2015-files-cli)
