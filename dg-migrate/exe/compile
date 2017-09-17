@@ -10,5 +10,13 @@ compile_export_2015() {
   rm temp/export-2015.c
 }
 
-mkdir -p temp
-compile_export_2015 $@
+compile_add_intern_type_2017() {
+  n=add-intern-type-2017
+  sc source/sc/$n.sc temp/$n.c &&
+  gcc $gcc_options -llmdb -lsph-dg temp/$n.c -o exe/dg-$n && chmod -R 755 temp &&
+  rm temp/$n.c
+}
+
+mkdir -p temp &&
+compile_add_intern_type_2017 $@
+#compile_export_2015 $@
