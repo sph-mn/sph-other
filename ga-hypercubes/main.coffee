@@ -2,7 +2,7 @@
 
 array_new = (size, init) ->
   a = Array(size)
-  if init then a.fill(init) else a
+  if init? then a.fill(init) else a
 
 array_copy = (a) -> a.slice()
 
@@ -148,20 +148,13 @@ cube = (options) ->
   rotate = get_rotator()
   angle = 0
   f = -> angle = draw ctx, vertices, lines, rotate, angle
-  setInterval f, refresh
+  interval = setInterval f, refresh
+  interval
 
-# this function renders on the canvas
-###
-cube
-  dimensions: 4
-  rotate_dimensions: [0, 1, 1, 0, 1]
-  refresh: 20
-  rotation_speed: 0.004
-  canvas_width: 1000
-  canvas_height: 800
-###
 
-class controls
+false_if_nan = (a) -> if isNaN a then false else a
+
+class ui_controls
   options:
     dimensions: 4
     rotate_dimensions: [0, 1, 1, 0, 1]
@@ -170,14 +163,41 @@ class controls
     canvas_width: 1000
     canvas_height: 800
 
+  dom: {}
+  label: (text, content) -> label = crel "label", text, content
+
+  update: =>
+    @options.dimensions = Math.max 1, (false_if_nan(parseInt(@dom.in.dim.value)) || @options.dimensions)
+    @options.rotate_dimensions = @dom.in.rot_dim.map (a) -> if a.checked then 1 else 0
+    rot_dim = document.getElementById "rot_dim"
+    rot_dim.innerHTML = ""
+    @dom.in.rot_dim = @in_rot_dim_new()
+    @dom.in.rot_dim.forEach (a) -> rot_dim.appendChild a
+    @options.rotation_speed = false_if_nan(parseFloat(@dom.in.rot_speed.value)) || @options.rotation_speed
+    @cube_interval and clearInterval(@cube_interval)
+    @cube_interval = cube @options
+
+  in_rot_dim_new: =>
+    array_new(@options.dimensions, 0).map (a, index) =>
+      a = crel "input", {type: "checkbox", value: index}
+      a.checked = not (@options.rotate_dimensions[index] is 0)
+      a.addEventListener "change", @update
+      a
+
   constructor: ->
-    console.log "cons"
-    div = crel "div"
-      input_rot_dim = array_new(options.dimensions, 0).map (a, index) ->
-        crel "input" {type: "radio", name: "rot_dim", value: index}
-    document.getElementByTagName("body").appendChild div
+    in_dim = crel "input", {type: "number", value: @options.dimensions}
+    in_rot_speed = crel "input", {type: "number", step: "0.001", value: @options.rotation_speed}
+    in_rot_dim = @in_rot_dim_new()
+    rot_dim = crel "div", @label("rotate"), crel("span", {id: "rot_dim"}, in_rot_dim)
+    rot_speed = @label "speed", in_rot_speed
+    dim = @label "dimensions", in_dim
+    @dom.in =
+      dim: in_dim
+      rot_dim: in_rot_dim
+      rot_speed: in_rot_speed
+    [in_dim, in_rot_speed].forEach (a) => a.addEventListener "change", @update
+    container = crel "div", dim, rot_dim, rot_speed
+    document.getElementById("controls").appendChild container
+    @update()
 
-  update: ->
-    alert("redraw")
-
-controls.new
+new ui_controls
