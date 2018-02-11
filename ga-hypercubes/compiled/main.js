@@ -60,6 +60,14 @@
     return result;
   };
 
+  false_if_nan = function(a) {
+    if (isNaN(a)) {
+      return false;
+    } else {
+      return a;
+    }
+  };
+
   vector_diff = function(a, b) {
     return a.map(function(a, index) {
       return a - b[index];
@@ -216,14 +224,6 @@
     return interval;
   };
 
-  false_if_nan = function(a) {
-    if (isNaN(a)) {
-      return false;
-    } else {
-      return a;
-    }
-  };
-
   ui_controls = (function() {
     ui_controls.prototype.options = {
       dimensions: 4,
@@ -241,9 +241,16 @@
       return label = crel("label", text, content);
     };
 
+    ui_controls.prototype.warning_shown = false;
+
     ui_controls.prototype.update = function() {
-      var rot_dim;
+      var count, rot_dim;
       this.options.dimensions = Math.max(1, false_if_nan(parseInt(this.dom["in"].dim.value)) || this.options.dimensions);
+      if (!this.warning_shown && 9 === this.options.dimensions) {
+        count = Math.pow(2, this.options.dimensions);
+        alert("one-time warning: with many dimensions this can easily freeze the browser tab. continuing to create " + count + " vertices", "warning");
+        this.warning_shown = true;
+      }
       this.options.rotate_dimensions = this.dom["in"].rot_dim.map(function(a) {
         if (a.checked) {
           return 1;

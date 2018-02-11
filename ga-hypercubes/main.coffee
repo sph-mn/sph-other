@@ -1,4 +1,7 @@
-# depends on https://github.com/weshoke/versor.js
+# depends on https://github.com/weshoke/versor.js, https://github.com/KoryNunn/crel.
+# * the first part of the file defines helper routines
+# * the "cube" function is the main drawing function
+# * ui_controls is for the html controls form
 
 array_new = (size, init) ->
   a = Array(size)
@@ -7,16 +10,19 @@ array_new = (size, init) ->
 array_copy = (a) -> a.slice()
 
 array_equals = (a, b) ->
+  # note that arrays are passed by reference
   i = a.length;
   while i -= 1
     if not (a[i] is b[i]) then return(false)
   true
 
 array_includes_array = (a, value) ->
+  # array array -> boolean
   a.some (a) -> array_equals a, value
 
 array_numeric_increment_le = (a, base) ->
-  # increment array elements like digits of a number
+  # increment array elements like digits of a number.
+  # lower endian. 000, 100, 010, 110, 001, etc
   a = array_copy a
   index = 0
   while(index < a.length)
@@ -35,7 +41,10 @@ factorial = (n) ->
     n = n - 1
   result
 
+false_if_nan = (a) -> if isNaN a then false else a
+
 vector_diff = (a, b) ->
+  # array array -> array
   a.map (a, index) -> a - b[index]
 
 vector_diff_count = (a, b) ->
@@ -51,6 +60,8 @@ k_cube_count = (k, dim) ->
   Math.pow(2, dim - k) * k_cubes_at_vertices_count(k, dim)
 
 cube = (options) ->
+  # object -> interval
+  # continuously draw and rotate a cube on an html canvas.
   dimensions = options.dimensions || 3
   # elements set to zero are not rotated
   rotate_dimensions = options.rotate_dimensions || []
@@ -63,7 +74,7 @@ cube = (options) ->
   canvas_height = options.canvas_height || 400
 
   get_vertices = ->
-    # cube vertices are every combination of axis start and end
+    # cube vertices are all combinations of -1 and 1
     result = []
     count = 2 ** dimensions
     elements = [-1, 1]
@@ -77,6 +88,7 @@ cube = (options) ->
     result
 
   get_lines = (vertices) ->
+    # produce all possible vertex pairings and filter
     result = []
     ia = 0
     while ia < vertices.length
@@ -94,10 +106,11 @@ cube = (options) ->
     result
 
   get_rotator = ->
-    # one rotation function per plane
+    # create one rotation function per plane
     rotators = array_new(dimensions, 0).map (a, index) ->
+      # if 0 then return an identity function
       if 0 is rotate_dimensions[index] then return (a, angle) -> a
-      data = array_new(dimensions, 0)
+      data = array_new dimensions, 0
       ia = (index + 1) % dimensions
       ib = index
       (a, angle) ->
@@ -108,6 +121,7 @@ cube = (options) ->
         rotor = space.Vec.apply this, data
         space.Vec.apply(this, a).sp(rotor).toArray()
     (a, angle) ->
+      # apply all rotation functions to the given point vector
       f = (a, rotate) -> a and rotate a, angle
       rotators.reduce f, a
 
@@ -122,9 +136,11 @@ cube = (options) ->
     width = ctx.canvas.width
     height = ctx.canvas.height
     ctx.fillRect 0, 0, width, height
+    # apply vertex transformations
     v = vertices.map (a) ->
       a = rotate a, angle
       project a, width, height, 400, 5
+    # draw edges
     lines.forEach (a) ->
       ctx.beginPath()
       start = a[0]
@@ -147,14 +163,15 @@ cube = (options) ->
   space = versor.create metric: array_new(dimensions, 1)
   rotate = get_rotator()
   angle = 0
+  # called repeatedly and updates angle
   f = -> angle = draw ctx, vertices, lines, rotate, angle
   interval = setInterval f, refresh
   interval
 
 
-false_if_nan = (a) -> if isNaN a then false else a
-
 class ui_controls
+  # the html for the controls and default options
+
   options:
     dimensions: 4
     rotate_dimensions: [0, 1, 1, 0, 1]
@@ -165,9 +182,14 @@ class ui_controls
 
   dom: {}
   label: (text, content) -> label = crel "label", text, content
+  warning_shown: false
 
   update: =>
     @options.dimensions = Math.max 1, (false_if_nan(parseInt(@dom.in.dim.value)) || @options.dimensions)
+    if not @warning_shown and 9 is @options.dimensions
+      count = 2 ** @options.dimensions
+      alert("one-time warning: with many dimensions this can easily freeze the browser tab. continuing to create " + count + " vertices", "warning")
+      @warning_shown = true
     @options.rotate_dimensions = @dom.in.rot_dim.map (a) -> if a.checked then 1 else 0
     rot_dim = document.getElementById "rot_dim"
     rot_dim.innerHTML = ""
@@ -178,6 +200,7 @@ class ui_controls
     @cube_interval = cube @options
 
   in_rot_dim_new: =>
+    # create a new array of checkboxes
     array_new(@options.dimensions, 0).map (a, index) =>
       a = crel "input", {type: "checkbox", value: index}
       a.checked = not (@options.rotate_dimensions[index] is 0)
@@ -185,6 +208,7 @@ class ui_controls
       a
 
   constructor: ->
+    # create input fields and container
     in_dim = crel "input", {type: "number", value: @options.dimensions}
     in_rot_speed = crel "input", {type: "number", step: "0.001", value: @options.rotation_speed}
     in_rot_dim = @in_rot_dim_new()
