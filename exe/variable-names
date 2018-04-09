@@ -1,10 +1,10 @@
 #!/usr/bin/guile
 !#
 
-(import (sph common) (sph other shitty-variable-name-generator))
+(import (sph base) (sph cli) (sph fun shitty-variable-name-generator))
 
 (define (svn-cli)
-  (let (arguments ((cli-create (ql (result-count word-part ...) #f #t))))
+  (let (arguments ((cli-create (list-q (result-count word-part ...) #f #t))))
     (and-let*
       ( (words (false-if-exception (string-join (alist-ref-q arguments word-part) " ")))
         (result-count

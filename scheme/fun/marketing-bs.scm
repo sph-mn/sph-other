@@ -1,5 +1,6 @@
 (library (sph fun marketing-bs)
   (export
+    display-marketing-bs
     make-marketing-bs
     make-marketing-bs-multiple)
   (import
@@ -32,10 +33,11 @@
 
   (define-as goal-source list
     "increase sales" "beat the competition"
-    "control strategic metrics" "become a key market player" "disrupt the market" "take the lead")
+    "grow shareholder value" "control strategic metrics"
+    "become a key market player" "grow your business" "disrupt the market" "take the lead")
 
   (define goal (list->vector goal-source))
-  (define goal-prefix (list->vector (produce (l e (string-join e " ")) goal-source synonym-with)))
+  (define goal-prefix (list->vector (produce (l a (string-join a " ")) goal-source synonym-with)))
 
   (define-as verb vector
     "extend" "revolutionise"
@@ -62,6 +64,7 @@
     "continuous" "best of breed"
     "hyperlocal" "beautiful"
     "high-volume" "integrated"
+    "amazing" "awesome"
     "holistic" "game-changing"
     "flexible" "multi-domain"
     "project-driven" "data-driven"
@@ -72,23 +75,24 @@
     "next-generation" "multi-dimensional"
     "rock-solid" "social"
     "seamless" "first-class"
-    "full-stack" "powerful"
-    "new" "best-in-class"
-    "integrated" "unmatched"
-    "leading" "real-time"
-    "responsive" "holistic"
-    "break-through" "best-of-breed"
+    "lightweight" "full-stack"
+    "powerful" "new"
+    "best-in-class" "integrated"
+    "unmatched" "leading"
+    "real-time" "responsive"
+    "holistic" "break-through"
+    "bullet proof" "best-of-breed"
     "buzzword compliant" "world-class"
     "business" "business"
     "business" "an enterprise"
     "enterprise" "an enterprise"
     "enterprise" "enterprise"
     "data" "cloud-based"
-    "dynamic" "ultra-fast"
-    "high-throughput" "cohesive"
-    "multi-channel" "hybrid"
-    "service oriented" "enterprise"
-    "multiple" "very, very complex" "premium" "confident" "embedabble")
+    "dynamic" "elegant"
+    "ultra-fast" "high-throughput"
+    "cohesive" "multi-channel"
+    "hybrid" "service oriented"
+    "enterprise" "multiple" "very complex" "premium" "confident" "embedabble")
 
   (define (random-choice . a) (list-ref-random a))
 
@@ -97,36 +101,39 @@
       (let*
         ( (source
             (list (list verb "and" verb noun "to" goal "with" adjective noun)
-              (list verb "," verb "and" verb noun)
-              (list adjective noun predicative-adjective combinator adjective noun)
-              (list (random-choice "" verb goal-prefix) adjective
+              ;(list verb "," verb "and" verb noun)
+              ;(list adjective noun predicative-adjective combinator adjective noun)
+              #;(list (random-choice "" verb goal-prefix) adjective
                 adjective noun (random-choice "" noun noun))
-              (list verb "your" adjective noun "and" verb adjective noun)
-              (list verb noun predicative-adjective "and" verb adjective noun predicative-adjective)
-              (list (random-choice verb goal) noun
+              ;(list verb "your" adjective noun "and" verb adjective noun)
+              ;(list verb noun predicative-adjective "and" verb adjective noun predicative-adjective)
+              #;(list (random-choice verb goal) noun
                 predicative-adjective combinator noun combinator adjective noun predicative-adjective)
-              (list verb "and" verb adjective adjective noun)
-              (list noun noun combinator noun predicative-adjective)))
+              ;(list verb "and" verb adjective adjective noun)
+              ;(list noun noun combinator noun predicative-adjective)
+              ))
           (source+goal
-            (map (l (e) (if (eq? verb (first e)) (append e (list "and" goal)) e)) source)))
+            (map (l (a) (if (eq? verb (first a)) (append a (list "and" goal)) a)) source)))
         (append source source+goal))))
 
   (define (random-vector-ref v) (vector-ref v (max 0 (- (random (vector-length v)) 1))))
 
   (define (get-unused words use-list)
-    (let loop ((e (random-vector-ref words)) (try-count (vector-length words)))
-      (if (or (not (contains? use-list e)) (< try-count 0)) e
-        (loop (random-vector-ref words) (- try-count 1)))))
+    (let loop ((a (random-vector-ref words)) (tries 20))
+      (if (or (not (contains? use-list a)) (< tries 0)) a
+        (loop (random-vector-ref words) (- tries 1)))))
 
   (define words->use-list-name
     (let
       (table
-        (ht-create-symbol noun (q noun)
-          verb (q verb) adjective (q adjective) predicative-adjective (q predicative-adjective)))
-      (l (words) "vector -> symbol" (ht-ref table words (q combinator)))))
+        (alist noun (q noun)
+          verb (q verb)
+          adjective (q adjective)
+          goal (q goal) predicative-adjective (q predicative-adjective) combinator (q combinator)))
+      (l (words) "vector -> symbol" (alistq-ref table words))))
 
   (define (get-use-list words use-lists) "vector list -> list"
-    (alistv-ref use-lists (words->use-list-name words)))
+    (alist-ref use-lists (words->use-list-name words)))
 
   (define (use-list-add words v use-lists)
     (alist-set! use-lists (words->use-list-name words)
@@ -134,26 +141,31 @@
 
   (define (fix-a-an words)
     (append
-      (map-segments 2
-        (l (a b) (if (and (string-equal? "a" a) (string-match "^[aeiouh]" b)) "an" a)) words)
+      (map-segments 2 (l (a b) (if (and (string-equal? "a" a) (string-match "^[aeiou]" b)) "an" a))
+        words)
       (list (last words))))
 
   (define (compress-commas a) "string -> string" (string-replace-string a " ," ","))
 
-  (define (make-marketing-bs)
-    (compress-commas
-      (string-join
-        (fix-a-an
-          (remove string-null?
-            (let loop
-              ( (pattern (random-vector-ref patterns)) (r (list))
-                (use-lists
-                  (alist-q noun (list)
-                    verb (list) adjective (list) predicative-adjective (list) combinator (list))))
-              (if (null? pattern) (reverse r)
-                (let (words (first pattern))
-                  (if (string? words) (loop (tail pattern) (pair words r) use-lists)
-                    (let (word (get-unused words (get-use-list words use-lists)))
-                      (loop (tail pattern) (pair word r) (use-list-add words word use-lists))))))))))))
+  (define (create-patterns use-lists c)
+    (let loop ((pattern (random-vector-ref patterns)) (result null) (use-lists use-lists))
+      (if (null? pattern)
+        (c (compress-commas (string-join (fix-a-an (remove string-null? (reverse result)))))
+          use-lists)
+        (let (words (first pattern))
+          (if (string? words) (loop (tail pattern) (pair words result) use-lists)
+            (let (word (get-unused words (get-use-list words use-lists)))
+              (loop (tail pattern) (pair word result) (use-list-add words word use-lists))))))))
 
-  (define (make-marketing-bs-multiple count) (map-integers count (l (n) (make-marketing-bs)))))
+  (define (make-use-lists)
+    (alist-q noun null
+      goal null verb null adjective null predicative-adjective null combinator null))
+
+  (define (make-marketing-bs count)
+    (let loop ((n 0) (use-lists (make-use-lists)) (result null))
+      (if (> count n)
+        (create-patterns use-lists
+          (l (pattern use-lists) (loop (+ n 1) use-lists (pair pattern result))))
+        result)))
+
+  (define (display-marketing-bs count) (each display-line (make-marketing-bs count))))
