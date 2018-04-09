@@ -42,10 +42,11 @@
     "extend" "revolutionise"
     "offer" "obtain"
     "access" "improve"
-    "invest into" "build"
-    "manage" "streamline"
-    "successfully market" "kick-start"
-    "provide" "increase" "leverage" "enable" "deliver" "create" "develop" "empower" "facilitate")
+    "upgrade" "invest into"
+    "build" "manage"
+    "streamline" "successfully market"
+    "kick-start" "provide"
+    "increase" "leverage" "enable" "deliver" "create" "develop" "empower" "facilitate")
 
   (define-as combinator vector "and" "with" "by" "with" "through" "by using" "over" "under" "for")
 
@@ -80,7 +81,7 @@
     "unmatched" "leading"
     "real-time" "responsive"
     "holistic" "break-through"
-    "bullet proof" "best-of-breed"
+    "bullet-proof" "best-of-breed"
     "buzzword compliant" "world-class"
     "business" "business"
     "business" "an enterprise"
@@ -100,17 +101,10 @@
       (let*
         ( (source
             (list (list verb "and" verb noun "to" goal "with" adjective noun)
-              ;(list verb "," verb "and" verb noun)
-              ;(list adjective noun predicative-adjective combinator adjective noun)
-              #;(list (random-choice "" verb goal-prefix) adjective
-                adjective noun (random-choice "" noun noun))
-              ;(list verb "your" adjective noun "and" verb adjective noun)
-              ;(list verb noun predicative-adjective "and" verb adjective noun predicative-adjective)
-              #;(list (random-choice verb goal) noun
-                predicative-adjective combinator noun combinator adjective noun predicative-adjective)
-              ;(list verb "and" verb adjective adjective noun)
-              ;(list noun noun combinator noun predicative-adjective)
-              ))
+              (list adjective noun predicative-adjective combinator adjective noun)
+              (list verb "your" adjective noun "and" verb adjective noun)
+              (list verb noun predicative-adjective "and" verb adjective noun predicative-adjective)
+              (list noun noun combinator noun predicative-adjective)))
           (source+goal
             (map (l (a) (if (eq? verb (first a)) (append a (list "and" goal)) a)) source)))
         (append source source+goal))))
@@ -128,11 +122,12 @@
         (alist noun (q noun)
           verb (q verb)
           adjective (q adjective)
+          goal-prefix (q goal-prefix)
           goal (q goal) predicative-adjective (q predicative-adjective) combinator (q combinator)))
       (l (words) "vector -> symbol" (alistq-ref table words))))
 
   (define (get-use-list words use-lists) "vector list -> list"
-    (alist-ref use-lists (words->use-list-name words)))
+    (or (alist-ref use-lists (words->use-list-name words)) null))
 
   (define (use-list-add words v use-lists)
     (alist-set! use-lists (words->use-list-name words)
@@ -158,7 +153,7 @@
 
   (define (make-use-lists)
     (alist-q noun null
-      goal null verb null adjective null predicative-adjective null combinator null))
+      goal-prefix null goal null verb null adjective null predicative-adjective null combinator null))
 
   (define (make-marketing-bs count)
     (let loop ((n 0) (use-lists (make-use-lists)) (result null))
