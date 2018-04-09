@@ -1,8 +1,7 @@
 (library (sph fun marketing-bs)
   (export
     display-marketing-bs
-    make-marketing-bs
-    make-marketing-bs-multiple)
+    make-marketing-bs)
   (import
     (ice-9 regex)
     (sph base)
