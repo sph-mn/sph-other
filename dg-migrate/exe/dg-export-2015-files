@@ -1,7 +1,7 @@
 #!/usr/bin/guile
 !#
 
-(import (sph base) (sph process create) (sph cli) (rnrs bytevectors) (sph storage dg))
+(import (sph common) (sph process create) (sph cli) (rnrs bytevectors) (sph storage dg))
 
 (define import-2015-2017
   "import the data from a file created with dg-export-2015 in a dg-2017 database.

@@ -164,7 +164,9 @@ cube = (options) ->
   rotate = get_rotator()
   angle = 0
   # called repeatedly and updates angle
-  f = -> angle = draw ctx, vertices, lines, rotate, angle
+  f = ->
+    console.log angle
+    angle = draw ctx, vertices, lines, rotate, angle
   interval = setInterval f, refresh
   interval
 
@@ -176,7 +178,7 @@ class ui_controls
     dimensions: 4
     rotate_dimensions: [0, 1, 1, 0, 1]
     refresh: 20
-    rotation_speed: 0.004
+    rotation_speed: 0.008
     canvas_width: 1000
     canvas_height: 800
 

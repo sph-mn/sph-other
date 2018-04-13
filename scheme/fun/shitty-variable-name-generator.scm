@@ -4,7 +4,7 @@
     svn-multiple)
   (import
     (rnrs io ports)
-    (sph base)
+    (sph common)
     (sph random-data))
 
   (define vowel "aeiou")
