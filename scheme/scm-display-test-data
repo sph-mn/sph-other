@@ -7,7 +7,7 @@
 (import (sph) (sph lang scheme) (sph tree) (ice-9 match) (sph list) (sph string))
 
 (define (format-test input expected)
-  (string-append (any->string input) "\n->\n" (any->string expected)))
+  (string-append (any->string-write input) "\n->\n" (string-trim-both (any->string expected))))
 
 (define (display-test-data path)
   (tree-extract
