@@ -1,0 +1,25 @@
+#!/usr/bin/guile
+!#
+
+(import (sph) (sph lang scheme) (sph tree) (ice-9 match) (sph list) (sph string))
+
+(define (format-test input expected)
+  (string-append (any->string input) "\n->\n" (any->string expected)))
+
+(define (display-test-data path)
+  (tree-extract
+    (l (a)
+      (match a
+        ( ( (quote test-execute-procedures-lambda) tests ...)
+          (display-line
+            (string-join
+              (apply append
+                (filter-map
+                  (l (test)
+                    (and (list? test) (map-slice 2 (l (a b) (format-test a b)) (tail test))))
+                  tests))
+              "\n\n")))
+        (_ #f)))
+    (file->datums path)))
+
+(apply display-test-data (tail (program-arguments)))
