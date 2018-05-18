@@ -31,28 +31,29 @@
   (define-as synonym-with list "by" "with" "through" "via")
 
   (define-as goal-source list
-    "increase sales" "beat the competition"
-    "grow shareholder value" "control strategic metrics"
-    "become a key market player" "grow your business" "disrupt the market" "take the lead")
+    "beat the competition" "become a key market player"
+    "control strategic metrics" "disrupt the market"
+    "increase sales" "grow your business" "grow shareholder value" "take the lead")
 
   (define goal (list->vector goal-source))
   (define goal-prefix (list->vector (produce (l a (string-join a " ")) goal-source synonym-with)))
 
   (define-as verb vector
-    "extend" "revolutionise"
-    "offer" "obtain"
-    "access" "improve"
-    "upgrade" "invest into"
-    "build" "manage"
-    "streamline" "successfully market"
-    "kick-start" "provide"
-    "increase" "leverage" "enable" "deliver" "create" "develop" "empower" "facilitate")
+    "access" "build"
+    "create" "deliver"
+    "develop" "empower"
+    "enable" "extend"
+    "facilitate" "harness"
+    "improve" "increase"
+    "invest into" "kick-start"
+    "leverage" "manage"
+    "obtain" "offer" "provide" "revolutionise" "streamline" "successfully market" "upgrade")
 
-  (define-as combinator vector "and" "with" "by" "with" "through" "by using" "over" "under" "for")
+  (define-as combinator vector "and" "by" "by using" "for" "over" "through" "under" "with" "with")
 
   (define-as predicative-adjective vector
-    "processing" "rules"
-    "agility" "wizard" "competence" "management" "chaining" "integration" "alignment" "backlog")
+    "agility" "alignment"
+    "backlog" "chaining" "competence" "integration" "management" "processing" "rules" "wizard")
 
   (define-as adjective vector
     "cloud" "enterprise-ready"
