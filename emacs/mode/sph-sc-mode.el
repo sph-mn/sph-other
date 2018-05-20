@@ -1,6 +1,5 @@
-; sph-sc.el - sph-sc major mode
-; version 2018-05-13
-; should be byte-compiled before usage (emacs command 'byte-compile-file')
+; sph-sc.el - emacs mode for sph-sc
+; version 2018-05-20
 ; Copyright (C) 2018 sph http://sph.mn <sph@posteo.eu> (current maintainer)
 
 ;; This program is free software; you can redistribute it and/or modify it
@@ -15,26 +14,12 @@
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with this program; if not, see <http://www.gnu.org/licenses/>.
-;----
-; * syntax highlighting and indentation
-; * regular indentation - every indentation step is represented by the same width
-; * syntax highlighting for only a small subset of scheme keywords per default
-; * whitespace on a line is reduced\compressed on indent (trailing whitespace and multiple occurences of inner whitespace).
-; it should be possible to disable this with the variable //compress-whitespace-on-indent//
-; ==== vs scheme-mode (scheme.el) ====
-; * scheme-mode additionally supports the dsssl-language and multiple additions for specific implementations
-; * lisp\scheme-mode indentation handling takes more than 500 lines, vs ~20 in this implementation using regular indentation
-; * ~600 lines to ~200
-; * sph-sc-mode is //much// faster
-
-;changes to lines between 'eval-when-compile' only take effect in a recompiled file
 
 (defalias 'pointto-toplevel-sexp-begin 'beginning-of-defun)
 (defalias 'sequence-ref 'elt)
 
 ;-- syntax --;
-; the syntax-table describes how various standard functions will treat text,
-; for example movement within the buffer with "forward-word"
+; the syntax-table describes how various standard functions will treat the text, for example movement within the buffer with 'forward-word'
 (defvar scheme-mode-syntax-table
   (let ((st (make-syntax-table)) (i 0))
     (while (< i ?0)
@@ -138,6 +123,7 @@
         (put-text-property (- end 1) end 'syntax-table '(12)))))
   (lisp-font-lock-syntactic-face-function state))
 
+;the levels are a font-lock feature to loosely set what should be highlighted
 (defconst sph-sc-font-lock-keywords-1
   (eval-when-compile
     '("(\\(define[^ ]*?\\) +(\\(\\sw+\\)" (1 'font-lock-keyword-face) (2 'font-lock-function-name-face))))
@@ -149,15 +135,16 @@
       (quote ("(\\(pre-define[^ ]?\\) (\\(\\sw+\\)" (2 font-lock-function-name-face)))
       (quote ("(\\(pre-\\w+\\)" (1 font-lock-preprocessor-face)))
       (quote ("(\\(sc-\\w+\\)" (1 font-lock-preprocessor-face)))
-      (quote ("(\\(define[^ ]*?\\) +(\\(\\sw+\\) \\(.*?\\))" (2 font-lock-function-name-face) (3 font-lock-keyword-face)))
+      (quote ("(\\(define[^ ]*?\\) +(\\(\\sw+\\) \\(.*?\\))" (2 font-lock-function-name-face)))
       ; color round brackets
       ;(quote ("(\\|)" . font-lock-string-face))
-      (quote ("(\\(define[^? ]*?\\) +\\(\\sw+\\)" (2 font-lock-variable-name-face)))
+      ;(quote ("(\\(define[^? ]*?\\) +\\(\\sw+\\)" (2 font-lock-variable-name-face)))
+      (quote ("(\\(label\\) +\\(\\sw+\\)" (2 font-lock-function-name-face)))
       (list
         (concat
           "(\\("
           (regexp-opt
-            '("if" "begin" "set" "deref" "if*" "struct-set")
+            (quote ("begin" "declare" "if" "if*" "goto" "return" "set"))
             t)
           "\\)\\>")
         1 (quote font-lock-keyword-face))
@@ -165,7 +152,7 @@
         (concat
           "(\\("
           (regexp-opt
-            (quote ("debug-log" "return" "malloc" "free" "else" "let" "let*"))
+            (quote ("debug-log" "malloc" "calloc" "realloc" "free"))
             t)
           "\\)\\>")
         1 (quote font-lock-builtin-face))

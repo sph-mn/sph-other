@@ -9,7 +9,7 @@
       (bold ((t (:bold t))))
       (bold-italic ((t (:italic t :bold t))))
       (default ((t (nil))))
-      (font-lock-keyword-face ((t (nil))))
+      (font-lock-keyword-face ((t (:foreground "#f5f5f5"))))
       (font-lock-function-name-face ((t (:foreground "#A8E4A0"))))
       (font-lock-type-face ((t (:foreground "eeeeee"))))
       (font-lock-builtin-face ((t (:bold t :foreground "#6082B6"))))
