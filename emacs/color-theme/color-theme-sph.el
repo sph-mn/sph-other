@@ -27,10 +27,10 @@
       (mode-line ((t (nil))))
       (minibuffer-prompt ((t (nil)))))))
 
-(defun color-theme-sph-dark-minimal ()
+(defun color-theme-sph-dark-monochrome ()
   (interactive)
   (color-theme-install
-    '(color-theme-sph-dark-minimal
+    '(color-theme-sph-dark-monochrome
       ((background-mode . dark))
       (font-lock-comment-face ((t (:foreground "#444444"))))
       (font-lock-comment-delimiter-face ((t (:foreground "#666666"))))
