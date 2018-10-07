@@ -26,7 +26,7 @@
 
   (define (string-ref-random a) (string-ref a (random (string-length a))))
 
-  (define-as chances ht-create-symbol
+  (define-as chances ht-create-symbol-q
     vowel-removal 75
     consonant-removal 10
     uppercase 30 prefix 2 prefix-special 2 shorten-word 35 spaces-removal 35 camelcase 75)
@@ -37,7 +37,7 @@
   ; chance deviation
   ; chance initialisation
   ; random settings and chances mutation disabled
-  (define-as settings ht-create-symbol chance-deviation 1.4 chance-max-init-iterations 20)
+  (define-as settings ht-create-symbol-q chance-deviation 1.4 chance-max-init-iterations 20)
 
   (define (update-chances-one)
     (ht-map!
