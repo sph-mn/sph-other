@@ -1,0 +1,169 @@
+#!/usr/bin/guile
+!#
+
+(import (sph) (sph io)
+  (sph lang itml read) (sph string)
+  (sph tree) (sph lang indent-syntax)
+  (ice-9 match) (sph list) (web uri) (sph hashtable) (sph filesystem))
+
+(define (url-drop-www-and-protocol a) "string -> string"
+  (string-drop-prefix-if-exists "www."
+    (if (string-prefix? "https://" a) (string-drop-prefix "https://" a)
+      (if (string-prefix? "http://" a) (string-drop-prefix "http://" a) a))))
+
+(define (url-hostname a) "string -> string"
+  (let (a-split (string-split (uri-host (string->uri a)) #\.))
+    (if (= 3 (length a-split)) (second a-split) (first a-split))))
+
+(define-as link-e-name-handlers ht-create-symbol-q
+  b (l (a) "basename" (string-replace-string (string-downcase (basename a)) "_" " "))
+  n
+  (l (a) "basename without suffix"
+    (string-replace-string (remove-filename-extension (basename a)) "_" " "))
+  h url-hostname u url-drop-www-and-protocol)
+
+(define (link-e-name a target)
+  "symbol/any string -> string/any
+   auto-create name from target if \"a\" is a symbol or result in \"a\" otherwise.
+   default supported symbols are:
+   b - basename, the basename of the pash of the target
+   h - hostname, the second-level domain of the hostname or the full hostname if there is no second-level domain
+   u - url, the url with the protocol and www. removed
+   n - the basename/file-name of url path without the last filename-extension"
+  (if (symbol? a) ((ht-ref link-e-name-handlers a) target) a))
+
+(define* (md-link url name #:optional description)
+  (string-append "[" name "](" url ")" (if description (string-append " " description) "")))
+
+(define* (link-e url/name/description #:key collapsed description sorted)
+  (let*
+    ( (links
+        (if description
+          (map-slice 3
+            (l (url name description)
+              (let (name (link-e-name name url))
+                ; name as first element for sorting
+                (pair name (md-link url name description))))
+            url/name/description)
+          (map-slice 2
+            (l (url name)
+              (let (name (link-e-name name url))
+                ; name as first element for sorting
+                (pair name (md-link url name #f))))
+            url/name/description)))
+      (md
+        (string-join (map tail (if sorted (list-sort-with-accessor string<? first links) links))
+          (if collapsed ", " "\n* "))))
+    (if (or collapsed (= 1 (length links))) md (string-append "* " md))))
+
+(define (itml2md path)
+  (let*
+    ( (old-itml-replacements
+        (apply append
+          (map
+            (l (a)
+              (list (pair (string-append "\\." a) (string-append "#" a))
+                (pair (string-append "\\.(" a) (string-append "#(" a))
+                (pair (string-append "\\" a) (string-append "##" a))
+                (pair (string-append "\\(" a) (string-append "##(" a))
+                (pair (string-append "\\#" a) (string-append "###" a))))
+            (map symbol->string
+              (list-q escape align
+                emphasis emphasis-strong
+                hidden-note include-c
+                include-ci include-cp
+                library-documentation library-short-description
+                link-c link-c-browse
+                link-c-download link-c-one
+                link-c-section link-ci
+                link-e link-e-collapsed
+                link-e-description link-es
+                link-es-collapsed link-es-description param param-if param-or-key short-description)))))
+      (itml
+        (string->itml-parsed
+          (fold (l (a result) (string-replace-string result (first a) (tail a)))
+            (file->string path) old-itml-replacements)))
+      (four-spaces (string-multiply " " 4)) (two-spaces (string-multiply " " 2)))
+    (display-line
+      (string-trim-right
+        (any->string
+          (first
+            (tree-transform* itml
+              (l (a recurse depth)
+                (let
+                  (result
+                    (match a
+                      ( ( (quote indent-descend-expression) "escape" a ...)
+                        (string-append "```\n" (prefix-tree->indent-tree a) "\n```"))
+                      (((quote inline-scm-expression) (quote link-e) a ...) (link-e a))
+                      (((quote inline-scm-expression) (quote link-es) a ...) (link-e a #:sorted #t))
+                      ( ( (quote inline-scm-expression) (quote link-es-description) a ...)
+                        (link-e a #:sorted #t #:description #t))
+                      ( ( (quote inline-scm-expression) (quote link-es-collapsed) a ...)
+                        (link-e a #:sorted #t #:collapsed #t))
+                      ( ( (quote inline-scm-expression) (quote link-e-description) a ...)
+                        (link-e a #:description #t))
+                      ( ( (quote indent-scm-expression) (quote link-e-description) a ...)
+                        (link-e a #:description #t))
+                      ( ( (quote indent-scm-expression) (quote link-es-collapsed) a ...)
+                        (link-e a #:collapsed #t #:sorted #t))
+                      (((quote indent-scm-expression) (quote link-es) a ...) (link-e a #:sorted #t))
+                      ( ( (quote indent-scm-expression) (quote link-es-description) a ...)
+                        (link-e a #:sorted #t #:description #t))
+                      ( ( (quote indent-scm-expression) (quote link-e-collapsed) a ...)
+                        (link-e a #:collapsed #t))
+                      ( ( (quote indent-text-expression) (quote link-es) a ...)
+                        (link-e a #:sorted #t))
+                      ( ( (quote inline-scm-expression) identifier a ...)
+                        (string-append four-spaces "#("
+                          (symbol->string identifier)
+                          (string-join (map any->string-write a) " " (q prefix)) ")"))
+                      ( ( (quote inline-text-expression) identifier arguments ...)
+                        (string-append four-spaces "##("
+                          identifier " " (string-join (map any->string arguments) " ") ")"))
+                      ( ( (quote line-text-expression) identifier arguments ...)
+                        (string-append four-spaces "##"
+                          identifier ": " (string-join (map any->string arguments) " ")))
+                      ( ( (quote line-scm-expression) identifier arguments ...)
+                        (string-append four-spaces "#"
+                          (symbol->string identifier) ": "
+                          (string-join (map any->string arguments) " ")))
+                      ( ( (quote indent-text-expression) identifier arguments ...)
+                        (string-append four-spaces "##"
+                          identifier
+                          (string-join (map any->string arguments)
+                            (string-append "\n" two-spaces four-spaces) (q prefix))))
+                      ( ( (quote indent-scm-expression) identifier a ...)
+                        (string-append four-spaces "#"
+                          (symbol->string identifier)
+                          (string-join (map any->string a)
+                            (string-append "\n" two-spaces four-spaces) (q prefix))))
+                      ( ( (quote indent-descend-expression) identifier arguments ...)
+                        (string-append four-spaces "###"
+                          identifier
+                          (string-join (map any->string arguments)
+                            (string-append "\n" two-spaces four-spaces) (q prefix))))
+                      (else #f)))
+                  (if result (list result #f depth) (list #f #t (+ 1 depth)))))
+              (l (a depth)
+                (list
+                  (match a (((quote line) a ...) (string-join a " "))
+                    ( ( (quote association) key content ...)
+                      (string-append key ": " (string-join content " ")))
+                    ( ( (? string? prefix) content ...)
+                      (let*
+                        ( (content
+                            (string-join (map (l (a) (if (equal? (q line-empty) a) "" a)) content)
+                              "\n"))
+                          (content
+                            (if (string-suffix? "\n" content) content (string-append content "\n"))))
+                        (string-append (string-multiply "#" depth) " " prefix "\n\n" content)))
+                    (else
+                      (if (list? a)
+                        (string-join
+                          (map (l (a) (if (equal? (q line-empty) a) "" (any->string a))) a) "\n")
+                        (any->string a))))
+                  (- depth 1)))
+              (l a a) -1)))))))
+
+(itml2md (first (tail (program-arguments))))
