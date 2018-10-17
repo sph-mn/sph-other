@@ -4,7 +4,7 @@
     make-marketing-bs)
   (import
     (ice-9 regex)
-    (sph common)
+    (sph filesystem) (sph hashtable) (sph io) (sph list) (sph number) (sph other) (sph process) (sph string) (sph vector) (sph)
     (sph list one)
     (sph random-data))
 
