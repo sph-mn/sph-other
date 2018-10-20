@@ -11,7 +11,7 @@
     (sph hashtable)
     (sph lang config)
     (sph list)
-    (sph list one)
+    (sph list other)
     (only (guile) make-list))
 
   (define sph-fun-german-names-description

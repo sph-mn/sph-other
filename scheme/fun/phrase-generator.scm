@@ -11,7 +11,7 @@
     (sph hashtable)
     (sph lang config)
     (sph list)
-    (sph list one)
+    (sph list other)
     (only (guile) make-list))
 
   (define sph-fun-german-names-description
@@ -53,7 +53,8 @@
   (define-as base-constructors ht-create-binding w1)
 
   (define (make-bases base)
-    (cond ((string? base) (list base))
+    (cond
+      ((string? base) (list base))
       ((list? base) (apply (ht-ref base-constructors (first base)) (tail base)))
       (else (raise (q invalid-base-specified)))))
 

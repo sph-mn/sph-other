@@ -4,9 +4,19 @@
     make-marketing-bs)
   (import
     (ice-9 regex)
-    (sph filesystem) (sph hashtable) (sph io) (sph list) (sph number) (sph other) (sph process) (sph string) (sph vector) (sph)
-    (sph list one)
-    (sph random-data))
+    (sph)
+    (sph filesystem)
+    (sph hashtable)
+    (sph io)
+    (sph list)
+    (sph alist)
+    (sph list other)
+    (sph number)
+    (sph other)
+    (sph process)
+    (sph random-data)
+    (sph string)
+    (sph vector))
 
   (define-as noun vector
     "silos" "services"
