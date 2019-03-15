@@ -60,7 +60,7 @@
       (l (n) (update-chances-one))))
 
   (define-syntax-rule (apply-modification? name)
-    (random-weighted-boolean (ht-ref chances (q name))))
+    (random-boolean (ht-ref chances (q name))))
 
   (define (vowel-indices a) (map-with-index (l (i e) (string-index vowel e)) a))
   (define (consonant-indices a) (map-with-index (l (i e) (string-index consonant e)) a))
