@@ -30,33 +30,38 @@
                   color "#ddd" ("a" color "#ddd") ("> :first-child ~ *" margin-top "2rem"))
                 (".description" font-size "0.75rem")
                 (".filter input" border 0 background-color "#eee" width "6rem")
-                (".list" display table
-                  width "100%"
-                  (".i" display table-row
-                    ("> *" display table-cell padding "2rem 0rem")
-                    (".m" text-align center visibility hidden vertical-align middle)
-                    (".k" width "10rem"
-                      (".k1" display inline) (".k2" display none)
-                      ("svg" height "10rem"
-                        width "10rem" ("path" stroke "#fff !important") ("text" visibility hidden))
-                      ("&:hover" ("svg text" visibility visible)
-                        ("+ .m" display table-cell visibility visible)))
-                    ("&.hidden" ("> *" padding 0) (".k1" display none) (".k2" display inline))
+                (".list" width "100%"
+                  (".i" clear left
+                    ("&:not(.hidden) + .i" clear left)
+                    ("> *" height "10rem" float left padding "2rem 0rem")
+                    (".k" (".k1" display inline) (".k2" display none)
+                      ("svg" width "10rem"
+                        height "10rem" ("path" stroke "#fff !important") ("text" visibility hidden))
+                      ("&:hover" ("svg text" visibility visible) ("+ .m" display block)))
+                    (".m" width "50%"
+                      text-align center display none ("> div" position relative top "4rem"))
+                    ("&.hidden" clear none
+                      ("> *" padding 0 height "22px") (".k1" display none)
+                      (".k2" display inline)
+                      (".m" text-align left
+                        margin-right "0.25rem" width initial ("> div" top "2px")))
                     ("&.excluded" display none) ("&:first-child" padding-top 0))))))))
       (body
         (div (@ (class description)) "features"
           (ul (li "hover over kanji shows stroke order and meaning")
             (li
-              "middle mouse button click on character minimises row. minimised rows are saved as long as the page address does not change")
-            (li "on page open, the browser jumps to the most recently minimised or restored row")
-            (li "when minimised, the characters can be selected and copied")
+              "middle mouse button click on character minimises row. minimised rows are saved as long as the path to the html file does not change")
+            (li "when minimised, characters can be selected and copied")
             (li "ctrl+middle-click minimises or restores all previous rows")
+            (li "multiple kanji and meanings can be used to filter")
             (li
-              "the page can be used offline after right click save page as. everything is contained in one html file")
+              "the page can be used offline with right click save page as. everything is contained in the html file")
             (li
               "jump to a kanji by adding # to the page address, for example file:///home/user/topokanji-viewer.html#大")
             (li "kanji list from "
-              (a (@ (href "https://github.com/sph-mn/topokanji-deck")) "topokanji-deck"))
+              (a (@ (href "https://github.com/sph-mn/topokanji-deck")) "topokanji-deck")
+              ", graphics and stroke order from "
+              (a (@ (href "https://kanjivg.tagaini.net/")) "kanjivg"))
             (li "this page is under a cc-by-sa license and can be copied, modified and rehosted")))
         (div (@ (class filter)) (input (@ (id filter-input) (placeholder "filter..."))))
         (div (@ (class list))
@@ -68,7 +73,7 @@
                     (div (@ (class k))
                       (span (@ (class k1)) (raw (unquote (include-stroke-order (vector-first a)))))
                       (span (@ (class k2)) (unquote (vector-first a))))
-                    (div (@ (class m)) (unquote (vector-second a))))))
+                    (div (@ (class m)) (div (unquote (vector-second a)))))))
               data)))
         (script
           (raw
@@ -93,7 +98,7 @@
                         (row.classList.remove "excluded") (row.classList.add "excluded")))
                     (console.log input.value))
                   (input.addEventListener "keyup" on-filter)
-                  (input.addEventListener "mouseup" on-filter))
+                  (input.addEventListener "change" on-filter))
                 (chain forEach (document.querySelectorAll ".k")
                   (l (a) (init-row a.parentNode)
                     (a.addEventListener "mouseup"
@@ -106,8 +111,11 @@
                                 (not (row.previousElementSibling.classList.contains "hidden")))
                               (scroll-to row.id))
                             (set-row row (not (row.classList.contains "hidden")))))
-                        (localStorage.setItem "most-recent" row.id)))))
-                (init-filter) (scroll-to (localStorage.getItem "most-recent"))))))))))
+                        ;(localStorage.setItem "most-recent" row.id)
+                        ))))
+                (init-filter)
+                ;(scroll-to (localStorage.getItem "most-recent"))
+                ))))))))
 
 (display "<!doctype html>")
 (sxml->html sxml)
