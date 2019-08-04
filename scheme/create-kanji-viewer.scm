@@ -1,5 +1,6 @@
 (import (sph) (csv csv)
-  (sxml html) (sph lang plcss) (sph vector) (sph lang sescript) (sph io) (sph string))
+  (sxml html) (sph lang plcss)
+  (sph vector) (sph lang sescript) (sph io) (sph string) (sxml simple) (sph tree) (sph list))
 
 (define read-csv (make-csv-reader #\,))
 
@@ -10,18 +11,34 @@
 
 (define (include-stroke-order id)
   (let*
-    ( (content
-        (file->string
-          (string-append "/home/nonroot/temp/japanese/1/reading-writing/kanjivg/kanji/0"
-            (number->string (char->integer (string-ref id 0)) 16) ".svg")))
-      (index (string-contains content "<svg")))
-    (regexp-replace (regexp-replace (regexp-replace (substring content index) " +" " ") "\n" "")
-      "\t" "")))
+    ( (source-path
+        (string-append "/home/nonroot/temp/japanese/1/reading-writing/kanjivg/kanji/0"
+          (number->string (char->integer (string-ref id 0)) 16) ".svg"))
+      (content
+        (call-with-input-file source-path
+          (l (in) (xml->sxml in #:namespaces (list (pair (q kvg) "http://example.org/kvg"))))))
+      (clean-sxml
+        (l (a)
+          (third
+            (tree-map-lists
+              (l (a)
+                (let (a (remove (l (a) (or (null? a) (equal? "\n" a) (equal? "\n\t" a))) a))
+                  (case (first a)
+                    ((id kvg:type kvg:element kvg:radical width height) null)
+                    ((http://www.w3.org/2000/svg:path) (pair (q path) (tail a)))
+                    ((http://www.w3.org/2000/svg:svg) (pair (q svg) (tail a)))
+                    ((http://www.w3.org/2000/svg:g) (pair (q g) (tail a)))
+                    ((http://www.w3.org/2000/svg:text) (pair (q text) (tail a)))
+                    ((@) (let (a (remove null? (tail a))) (if (null? a) null (pair (q @) a))))
+                    (else a))))
+              a)))))
+    (call-with-output-string (l (out) (sxml->html (clean-sxml content) out)))))
 
 (define sxml
   (qq
     (html
-      (head (meta (@ (charset utf-8))) (title "topokanji viewer")
+      (head (meta (@ (charset utf-8))) (meta (@ (name viewport) (content "initial-scale=1")))
+        (title "kanji viewer")
         (style
           (raw
             (unquote
@@ -32,8 +49,7 @@
                 (".filter input" border 0 background-color "#eee" width "6rem")
                 (".list" width "100%"
                   (".i" clear left
-                    ("&:not(.hidden) + .i" clear left)
-                    ("> *" height "10rem" float left padding "2rem 0rem")
+                    ("&:not(.hidden) + .i" clear left) ("> *" height "10rem" float left)
                     (".k" (".k1" display inline) (".k2" display none)
                       ("svg" width "10rem"
                         height "10rem" ("path" stroke "#fff !important") ("text" visibility hidden))
@@ -41,7 +57,7 @@
                     (".m" width "50%"
                       text-align center display none ("> div" position relative top "4rem"))
                     ("&.hidden" clear none
-                      ("> *" padding 0 height "22px") (".k1" display none)
+                      ("> *" height "22px") (".k1" display none)
                       (".k2" display inline)
                       (".m" text-align left
                         margin-right "0.25rem" width initial ("> div" top "2px")))
@@ -57,7 +73,7 @@
             (li
               "the page can be used offline with right click save page as. everything is contained in the html file")
             (li
-              "jump to a kanji by adding # to the page address, for example file:///home/user/topokanji-viewer.html#大")
+              "jump to a kanji by adding # to the page address, for example file:///home/user/kanji-viewer.html#大")
             (li "kanji list from "
               (a (@ (href "https://github.com/sph-mn/topokanji-deck")) "topokanji-deck")
               ", graphics and stroke order from "
