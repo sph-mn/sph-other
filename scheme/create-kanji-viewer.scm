@@ -48,14 +48,15 @@
                 (".description" font-size "0.75rem")
                 (".filter input" border 0 background-color "#eee" width "6rem")
                 (".list" width "100%"
-                  (".i" clear left
-                    ("&:not(.hidden) + .i" clear left) ("> *" height "10rem" float left)
-                    (".k" (".k1" display inline) (".k2" display none)
-                      ("svg" width "10rem"
-                        height "10rem" ("path" stroke "#fff !important") ("text" visibility hidden))
+                  display flex
+                  flex-wrap wrap
+                  (".i" width "25rem"
+                    ("&:not(.hidden) + .i" clear left) ("> *" float left)
+                    (".k" (".k1" display inline) (".k2" font-size "20px" display none)
+                      ("svg" width "15rem"
+                        height "15rem" ("path" stroke "#fff !important") ("text" visibility hidden))
                       ("&:hover" ("svg text" visibility visible) ("+ .m" display block)))
-                    (".m" width "50%"
-                      text-align center display none ("> div" position relative top "4rem"))
+                    (".m" text-align center display none ("> div" position relative top "4rem"))
                     ("&.hidden" clear none
                       ("> *" height "22px") (".k1" display none)
                       (".k2" display inline)
@@ -111,8 +112,7 @@
                       (if
                         (or (= 0 input.value.length) (input.value.includes row.id)
                           (chain includes (get (row.querySelector ".m") "innerHTML") input.value))
-                        (row.classList.remove "excluded") (row.classList.add "excluded")))
-                    (console.log input.value))
+                        (row.classList.remove "excluded") (row.classList.add "excluded"))))
                   (input.addEventListener "keyup" on-filter)
                   (input.addEventListener "change" on-filter))
                 (chain forEach (document.querySelectorAll ".k")
