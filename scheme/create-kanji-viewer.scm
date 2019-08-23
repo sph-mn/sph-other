@@ -22,17 +22,24 @@
           (third
             (tree-map-lists
               (l (a)
-                (let (a (remove (l (a) (or (null? a) (equal? "\n" a) (equal? "\n\t" a))) a))
+                (let
+                  (a (remove (l (a) (or (null? a) (equal? "\n" a) (equal? "\n\t" a))) a))
                   (case (first a)
-                    ((id kvg:type kvg:element kvg:radical width height) null)
+                    ( (id kvg:type kvg:variant
+                        kvg:position kvg:phon kvg:element kvg:radical width height)
+                      null)
                     ((http://www.w3.org/2000/svg:path) (pair (q path) (tail a)))
                     ((http://www.w3.org/2000/svg:svg) (pair (q svg) (tail a)))
                     ((http://www.w3.org/2000/svg:g) (pair (q g) (tail a)))
-                    ((http://www.w3.org/2000/svg:text) (pair (q text) (tail a)))
+                    ( (http://www.w3.org/2000/svg:text)
+                      (pairs (q text) (append (first (tail a)) (list (list (q font-size) 8)))
+                        (tail (tail a))))
+                    ((style) (list))
                     ((@) (let (a (remove null? (tail a))) (if (null? a) null (pair (q @) a))))
                     (else a))))
-              a)))))
-    (call-with-output-string (l (out) (sxml->html (clean-sxml content) out)))))
+              a))))
+      (clean-sxml-string (l (a) (regexp-replace (regexp-replace a "\n|\t|\r" "") ">\\s+<" ""))))
+    (clean-sxml-string (call-with-output-string (l (out) (sxml->html (clean-sxml content) out))))))
 
 (define sxml
   (qq
@@ -42,7 +49,7 @@
         (style
           (raw
             (unquote
-              (css ("html" font-size "14px")
+              (css ("html" font-size "16px")
                 ("body" background-color black
                   color "#ddd" ("a" color "#ddd") ("> :first-child ~ *" margin-top "2rem"))
                 (".description" font-size "0.75rem")
@@ -54,8 +61,9 @@
                     ("&:not(.hidden) + .i" clear left) ("> *" float left)
                     (".k" (".k1" display inline) (".k2" font-size "20px" display none)
                       ("svg" width "15rem"
-                        height "15rem" ("path" stroke "#fff !important") ("text" visibility hidden))
-                      ("&:hover" ("svg text" visibility visible) ("+ .m" display block)))
+                        height "15rem" ("path" stroke-width 2 stroke "#fff !important") ("text" visibility hidden))
+                      ("&:hover" ("svg text" visibility visible color "#808080")
+                        ("+ .m" display block)))
                     (".m" text-align center display none ("> div" position relative top "4rem"))
                     ("&.hidden" clear none
                       ("> *" height "22px") (".k1" display none)
