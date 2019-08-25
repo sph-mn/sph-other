@@ -1,45 +1,55 @@
 (import (sph) (csv csv)
   (sxml html) (sph lang plcss)
-  (sph vector) (sph lang sescript) (sph io) (sph string) (sxml simple) (sph tree) (sph list))
+  (sph vector) (sph lang sescript)
+  (sph io) (sph string) (sxml simple) (sph tree) (sph list) (only (srfi srfi-1) take))
 
 (define read-csv (make-csv-reader #\,))
 
 (define data
-  (call-with-input-file "/home/nonroot/ps/topokanji-deck/download/topokanji-deck.csv" read-csv))
+  (call-with-input-file "/home/nonroot/ps/kanji-deck/download/jouyou-by-stroke-count.csv" read-csv))
 
 (define-syntax-rule (js a ...) (sescript->ecmascript-string (quasiquote (begin a ...))))
 
 (define (include-stroke-order id)
+  (define (clean-sxml a)
+    (third
+      (tree-map-lists
+        (l (a)
+          (let (a (remove (l (a) (or (null? a) (equal? "\n" a) (equal? "\n\t" a))) a))
+            (case (first a)
+              ((id kvg:type kvg:variant kvg:position kvg:phon kvg:element kvg:radical) null)
+              ((http://www.w3.org/2000/svg:path) (pair (q path) (tail a)))
+              ((http://www.w3.org/2000/svg:svg) (pair (q svg) (tail a)))
+              ((http://www.w3.org/2000/svg:g) (pair (q g) (tail a)))
+              ((http://www.w3.org/2000/svg:text) (pair (q text) (tail a)))
+              ( (style)
+                (list (q style)
+                  (string-join
+                    (filter-map
+                      (l (a)
+                        (and
+                          (not (or (string-prefix? "stroke-width:" a) (string-prefix? "stroke:" a)))
+                          a))
+                      (string-split (last a) #\;))
+                    ";")))
+              ( (@)
+                (pair (q @)
+                  (filter-map
+                    (l (a) (and (not (null? a)) (not (contains? (q (width height)) (first a))) a))
+                    (tail a))))
+              (else a))))
+        a)))
+  (define (clean-sxml-string a) a (regexp-replace (regexp-replace a "\n|\t|\r" "") ">\\s+<" ""))
   (let*
     ( (source-path
         (string-append "/home/nonroot/temp/japanese/1/reading-writing/kanjivg/kanji/0"
           (number->string (char->integer (string-ref id 0)) 16) ".svg"))
       (content
-        (call-with-input-file source-path
-          (l (in) (xml->sxml in #:namespaces (list (pair (q kvg) "http://example.org/kvg"))))))
-      (clean-sxml
-        (l (a)
-          (third
-            (tree-map-lists
-              (l (a)
-                (let
-                  (a (remove (l (a) (or (null? a) (equal? "\n" a) (equal? "\n\t" a))) a))
-                  (case (first a)
-                    ( (id kvg:type kvg:variant
-                        kvg:position kvg:phon kvg:element kvg:radical width height)
-                      null)
-                    ((http://www.w3.org/2000/svg:path) (pair (q path) (tail a)))
-                    ((http://www.w3.org/2000/svg:svg) (pair (q svg) (tail a)))
-                    ((http://www.w3.org/2000/svg:g) (pair (q g) (tail a)))
-                    ( (http://www.w3.org/2000/svg:text)
-                      (pairs (q text) (append (first (tail a)) (list (list (q font-size) 8)))
-                        (tail (tail a))))
-                    ((style) (list))
-                    ((@) (let (a (remove null? (tail a))) (if (null? a) null (pair (q @) a))))
-                    (else a))))
-              a))))
-      (clean-sxml-string (l (a) (regexp-replace (regexp-replace a "\n|\t|\r" "") ">\\s+<" ""))))
-    (clean-sxml-string (call-with-output-string (l (out) (sxml->html (clean-sxml content) out))))))
+        (and (file-exists? source-path)
+          (call-with-input-file source-path
+            (l (in) (xml->sxml in #:namespaces (list (pair (q kvg) "http://example.org/kvg"))))))))
+    (and content
+      (clean-sxml-string (call-with-output-string (l (out) (sxml->html (clean-sxml content) out)))))))
 
 (define sxml
   (qq
@@ -61,10 +71,11 @@
                     ("&:not(.hidden) + .i" clear left) ("> *" float left)
                     (".k" (".k1" display inline) (".k2" font-size "20px" display none)
                       ("svg" width "15rem"
-                        height "15rem" ("path" stroke-width 2 stroke "#fff !important") ("text" visibility hidden))
+                        height "15rem"
+                        ("path" stroke-width 2 stroke "#fff") ("text" visibility hidden))
                       ("&:hover" ("svg text" visibility visible color "#808080")
                         ("+ .m" display block)))
-                    (".m" text-align center display none ("> div" position relative top "4rem"))
+                    (".m" text-align center display none ("> div" position relative top "7rem"))
                     ("&.hidden" clear none
                       ("> *" height "22px") (".k1" display none)
                       (".k2" display inline)
@@ -77,28 +88,29 @@
             (li
               "middle mouse button click on character minimises row. minimised rows are saved as long as the path to the html file does not change")
             (li "when minimised, characters can be selected and copied")
+            (li "multiple kanji or a meaning can be used in the search field")
+            (li
+              "the page can be used offline with right click save page as. everything is contained in one html file")
             (li "ctrl+middle-click minimises or restores all previous rows")
-            (li "multiple kanji and meanings can be used to filter")
-            (li
-              "the page can be used offline with right click save page as. everything is contained in the html file")
-            (li
-              "jump to a kanji by adding # to the page address, for example file:///home/user/kanji-viewer.html#大")
             (li "kanji list from "
-              (a (@ (href "https://github.com/sph-mn/topokanji-deck")) "topokanji-deck")
+              (a (@ (href "https://github.com/sph-mn/kanji-deck")) "kanji-deck")
               ", graphics and stroke order from "
               (a (@ (href "https://kanjivg.tagaini.net/")) "kanjivg"))
             (li "this page is under a cc-by-sa license and can be copied, modified and rehosted")))
         (div (@ (class filter)) (input (@ (id filter-input) (placeholder "filter..."))))
         (div (@ (class list))
           (unquote-splicing
-            (map
+            (filter-map
               (l (a)
-                (qq
-                  (div (@ (class i) (id (unquote (vector-first a))))
-                    (div (@ (class k))
-                      (span (@ (class k1)) (raw (unquote (include-stroke-order (vector-first a)))))
-                      (span (@ (class k2)) (unquote (vector-first a))))
-                    (div (@ (class m)) (div (unquote (vector-second a)))))))
+                (let (stroke-order (include-stroke-order (vector-first a)))
+                  (and stroke-order
+                    (qq
+                      (div (@ (class i) (id (unquote (vector-first a))))
+                        (div (@ (class k))
+                          (span (@ (class k1))
+                            (raw (unquote (include-stroke-order (vector-first a)))))
+                          (span (@ (class k2)) (unquote (vector-first a))))
+                        (div (@ (class m)) (div (unquote (vector-second a)))))))))
               data)))
         (script
           (raw
