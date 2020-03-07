@@ -1,25 +1,19 @@
-(library (sph fun german-names)
-  (export
-    display-german-names
-    make-german-names
-    sph-fun-german-names-description)
-  (import
-    (rnrs exceptions)
-    (sph)
-    (sph alist)
-    (sph fun phrase-generator)
-    (sph hashtable)
-    (sph lang config)
-    (sph list)
-    (sph list other)
-    (only (guile) make-list))
+(define-module (sph fun german-names))
 
-  (define sph-fun-german-names-description
-    "create funny german animal/place/band-names.
-     config format see the module (sph fun phrase-generator)")
+(use-modules (sph) (sph alist)
+  (sph fun phrase-generator) (sph hashtable) (sph lang config) (sph list) (sph list other))
 
-  (define-as config list-q
-    "affe" ((p1 "n") (s2 "" "n"))
+(export display-german-names make-german-names sph-fun-german-names-description)
+
+(define sph-fun-german-names-description
+  "create funny german animal/place/band-names.
+   config format see the module (sph fun phrase-generator).
+   this config creates too many similar words:
+   (w1 \"ppel\" ((\"\" \"s\" \"n\" \"m\" \"f\" \"p\") (\"a\" \"o\" \"ü\"))) (p1 s1 p2 s2)
+   (w1 (\"kk\" \"g\" \"gg\") ((\"h\" \"f\" \"m\" \"s\" \"sch\" \"n\" \"g\") (\"a\" \"o\" \"ö\" \"ü\" \"e\"))) ((p1 \"el\") (s1 \"ler\" \"er\") (s2 \"ler\" \"e\" \"er\"))")
+
+(define config
+  (list-q "affe" ((p1 "n") (s2 "" "n"))
     "alpen" (p1 p2)
     "bacher" (s1)
     "franken" (p1)
@@ -141,14 +135,7 @@
     "wälder" (s1)
     "zapfen" (p2 s2)
     "zipfel" (p1 s2)
-    "zipfler" (s2)
-    "zung" ((p2 "en") (s2))
-    "ült" ((p1 "en") (s1 "er"))
-    "gokkel" (p2 s2)
-    ; creates too many similar words
-    ;(w1 "ppel" (("" "s" "n" "m" "f" "p") ("a" "o" "ü"))) (p1 s1 p2 s2)
-    ;(w1 ("kk" "g" "gg") (("h" "f" "m" "s" "sch" "n" "g") ("a" "o" "ö" "ü" "e"))) ((p1 "el") (s1 "ler" "er") (s2 "ler" "e" "er"))
-    )
+    "zipfler" (s2) "zung" ((p2 "en") (s2)) "ült" ((p1 "en") (s1 "er")) "gokkel" (p2 s2)))
 
-  (define make-german-names (two-words-getter (load-config config)))
-  (define (display-german-names count) (each display-line (make-german-names count))))
+(define make-german-names (two-words-getter (load-config config)))
+(define (display-german-names count) (each display-line (make-german-names count)))
