@@ -4,7 +4,7 @@
 ; for tests for (sph test) from sph-lib,
 ; extract test input/expected data and display it with some formatting
 
-(import (sph) (sph lang scheme) (sph tree) (ice-9 match) (sph list) (sph string))
+(use-modules (sph) (sph lang scheme) (sph tree) (srfi srfi-1) (ice-9 match) (sph list) (sph string))
 
 (define (format-test input expected)
   (string-append (any->string-write input) "\n->\n" (string-trim-both (any->string expected))))
