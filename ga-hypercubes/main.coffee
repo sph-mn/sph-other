@@ -115,8 +115,8 @@ cube = (options) ->
       ib = index
       (a, angle) ->
         # array number -> array
-        data[ia] = Math.cos(angle)
-        data[ib] = Math.sin(angle)
+        data[ia] = Math.cos angle
+        data[ib] = Math.sin angle
         # create a versorjs object
         rotor = space.Vec.apply this, data
         space.Vec.apply(this, a).sp(rotor).toArray()
@@ -177,7 +177,7 @@ class ui_controls
     dimensions: 4
     rotate_dimensions: [1, 1, 1, 0]
     refresh: 20
-    rotation_speed: 0.01
+    rotation_speed: 0.008
     canvas_width: 1000
     canvas_height: 800
 

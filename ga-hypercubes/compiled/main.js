@@ -337,7 +337,7 @@
       dimensions: 4,
       rotate_dimensions: [1, 1, 1, 0],
       refresh: 20,
-      rotation_speed: 0.01,
+      rotation_speed: 0.008,
       canvas_width: 1000,
       canvas_height: 800
     };
