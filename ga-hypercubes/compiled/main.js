@@ -335,7 +335,7 @@
     // the html for the controls and default options
     ui_controls.prototype.options = {
       dimensions: 4,
-      rotate_dimensions: [1, 0, 0, 1],
+      rotate_dimensions: [1, 1, 1, 0],
       refresh: 20,
       rotation_speed: 0.01,
       canvas_width: 1000,
