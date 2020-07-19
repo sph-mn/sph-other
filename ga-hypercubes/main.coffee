@@ -74,7 +74,7 @@ cube = (options) ->
   canvas_height = options.canvas_height || 400
 
   get_vertices = ->
-    # cube vertices are all combinations of -1 and 1
+    # cube vertices are every distinct 2-tuple of -1 and 1
     result = []
     count = 2 ** dimensions
     elements = [-1, 1]
@@ -141,10 +141,11 @@ cube = (options) ->
       a = rotate a, angle
       project a, width, height, 400, 5
     # draw edges
-    lines.forEach (a) ->
-      ctx.beginPath()
+    lines.forEach (a, index) ->
       start = a[0]
       end = a[1]
+      ctx.strokeStyle = "hsl(298, " + (40 + (index / lines.length) * 60) + "%, 61%)"
+      ctx.beginPath()
       ctx.moveTo v[start][0], v[start][1]
       ctx.lineTo v[end][0], v[end][1]
       ctx.closePath()
@@ -158,15 +159,13 @@ cube = (options) ->
   ctx = canvas.getContext "2d"
   ctx.strokeStyle = "rgb(255,55,255)"
   ctx.fillStyle = "rgb(0,0,0)"
-  vertices = get_vertices(dimensions)
+  vertices = get_vertices dimensions
   lines = get_lines vertices
   space = versor.create metric: array_new(dimensions, 1)
   rotate = get_rotator()
   angle = 0
   # called repeatedly and updates angle
-  f = ->
-    console.log angle
-    angle = draw ctx, vertices, lines, rotate, angle
+  f = -> angle = draw ctx, vertices, lines, rotate, angle
   interval = setInterval f, refresh
   interval
 
@@ -176,9 +175,9 @@ class ui_controls
 
   options:
     dimensions: 4
-    rotate_dimensions: [0, 1, 1, 0, 1]
+    rotate_dimensions: [1, 1, 1, 0]
     refresh: 20
-    rotation_speed: 0.008
+    rotation_speed: 0.01
     canvas_width: 1000
     canvas_height: 800
 
@@ -190,7 +189,7 @@ class ui_controls
     @options.dimensions = Math.max 1, (false_if_nan(parseInt(@dom.in.dim.value)) || @options.dimensions)
     if not @warning_shown and 9 is @options.dimensions
       count = 2 ** @options.dimensions
-      alert("one-time warning: with many dimensions this can easily freeze the browser tab. continuing to create " + count + " vertices", "warning")
+      alert("increasing dimensions can easily overload the browser. now continuing to create " + count + " vertices", "notice")
       @warning_shown = true
     @options.rotate_dimensions = @dom.in.rot_dim.map (a) -> if a.checked then 1 else 0
     rot_dim = document.getElementById "rot_dim"
