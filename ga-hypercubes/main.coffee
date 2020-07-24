@@ -74,7 +74,7 @@ cube = (options) ->
   canvas_height = options.canvas_height || 400
 
   get_vertices = ->
-    # cube vertices are every distinct 2-tuple of -1 and 1
+    # every distinct n-tuple of -1 and 1
     result = []
     count = 2 ** dimensions
     elements = [-1, 1]
