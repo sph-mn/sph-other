@@ -114,13 +114,13 @@
     // in milliseconds
     refresh = options.refresh || 20;
     // in radians
-    rotation_speed = options.rotation_speed || 0.002;
+    rotation_speed = options.rotation_speed || 0.008;
     // in pixel
     canvas_width = options.canvas_width || 800;
     canvas_height = options.canvas_height || 400;
     get_vertices = function() {
       var a, count, elements, index, result;
-      // cube vertices are every distinct 2-tuple of -1 and 1
+      // every distinct n-tuple of -1 and 1
       result = [];
       count = 2 ** dimensions;
       elements = [-1, 1];
@@ -335,7 +335,7 @@
     // the html for the controls and default options
     ui_controls.prototype.options = {
       dimensions: 4,
-      rotate_dimensions: [1, 1, 1, 0],
+      rotate_dimensions: [1, 0, 1, 1],
       refresh: 20,
       rotation_speed: 0.008,
       canvas_width: 1000,

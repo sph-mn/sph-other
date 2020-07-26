@@ -68,7 +68,7 @@ cube = (options) ->
   # in milliseconds
   refresh = options.refresh || 20
   # in radians
-  rotation_speed = options.rotation_speed || 0.002
+  rotation_speed = options.rotation_speed || 0.008
   # in pixel
   canvas_width = options.canvas_width || 800
   canvas_height = options.canvas_height || 400
@@ -175,7 +175,7 @@ class ui_controls
 
   options:
     dimensions: 4
-    rotate_dimensions: [1, 1, 1, 0]
+    rotate_dimensions: [1, 0, 1, 1]
     refresh: 20
     rotation_speed: 0.008
     canvas_width: 1000
