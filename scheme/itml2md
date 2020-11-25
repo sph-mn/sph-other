@@ -68,17 +68,17 @@
                 (pair (string-append "\\(" a) (string-append "##(" a))
                 (pair (string-append "\\#" a) (string-append "###" a))))
             (map symbol->string
-              (list-q escape align
-                emphasis emphasis-strong
-                hidden-note include-c
-                include-ci include-cp
-                library-documentation library-short-description
-                link-c link-c-browse
-                link-c-download link-c-one
-                link-c-section link-ci
-                link-e link-e-collapsed
-                link-e-description link-es
-                link-es-collapsed link-es-description param param-if param-or-key short-description)))))
+              (q (escape align
+                  emphasis emphasis-strong
+                  hidden-note include-c
+                  include-ci include-cp
+                  library-documentation library-short-description
+                  link-c link-c-browse
+                  link-c-download link-c-one
+                  link-c-section link-ci
+                  link-e link-e-collapsed
+                  link-e-description link-es
+                  link-es-collapsed link-es-description param param-if param-or-key short-description))))))
       (itml
         (string->itml-parsed
           (fold (l (a result) (string-replace-string result (first a) (tail a)))

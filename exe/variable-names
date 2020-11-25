@@ -4,7 +4,7 @@
 (import (sph filesystem) (sph hashtable) (sph io) (sph list) (sph number) (sph other) (sph process) (sph string) (sph vector) (sph) (sph cli) (sph fun shitty-variable-name-generator))
 
 (define (svn-cli)
-  (let (arguments ((cli-create (list-q (result-count word-part ...) #f #t))))
+  (let (arguments ((cli-create (q ((result-count word-part ...) #f #t)))))
     (and-let*
       ( (words (false-if-exception (string-join (alist-ref-q arguments word-part) " ")))
         (result-count
