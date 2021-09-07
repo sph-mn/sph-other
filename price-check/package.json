@@ -1,0 +1,13 @@
+{
+  "name": "price-check",
+  "version": "0.0.2",
+  "license": "GPL-3.0-or-later",
+  "dependencies": {
+    "puppeteer": "*",
+    "commander": "*",
+    "puppeteer-extra-plugin-stealth": "*",
+    "puppeteer-extra": "*",
+    "node-notifier": "*",
+    "moment": "*"
+  }
+}

@@ -114,6 +114,7 @@ cube = (options) ->
       ia = (index + 1) % dimensions
       ib = index
       (a, angle) ->
+        angle = angle + ((ia + 1) * 1000)
         # array number -> array
         data[ia] = Math.cos angle
         data[ib] = Math.sin angle

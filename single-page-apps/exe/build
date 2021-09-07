@@ -1,0 +1,36 @@
+#!/usr/bin/coffee
+
+fs = require "fs"
+path = require "path"
+
+program = require "commander"
+  .description("<source_directory>")
+  .parse process.argv
+
+source = program.args[0].replace(/[\/\\]/, "")
+
+config =
+  source: source
+  target: "#{source}/#{path.basename(source)}.html"
+  paths:
+    style: "style.css"
+    head: "head.html"
+    body: "body.html"
+    script: "script.js"
+
+read_files = (config) ->
+  result = {}
+  Object.keys(config.paths).forEach (key) ->
+    path = "#{config.source}/#{config.paths[key]}"
+    result[key] = fs.readFileSync(path, "utf-8") if fs.existsSync path
+  result
+
+build = (config) ->
+  data = read_files config
+  content = fs.readFileSync "layout.html", "utf-8"
+  ["style", "head", "body", "script"].forEach (key) ->
+    content = content.replace("{#{key}}", data[key] || "")
+  on_error = (a) -> if a then console.error a
+  fs.writeFile config.target, content, on_error
+
+build config

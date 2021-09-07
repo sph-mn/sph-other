@@ -178,6 +178,7 @@
         ib = index;
         return function(a, angle) {
           var rotor;
+          angle = angle + ((ia + 1) * 1000);
           // array number -> array
           data[ia] = Math.cos(angle);
           data[ib] = Math.sin(angle);

@@ -1,0 +1,15 @@
+#keywords {
+    whitespace: nowrap;
+    margin-bottom: 0.5rem;
+}
+#links > div:not(:first-child) {
+    padding-top: 0.5rem;
+}
+#keywords > div, #categories > div {
+    padding-left: 0.25rem;
+    padding-right: 0.25rem;
+    display: inline-block;
+}
+#query_reset {
+    margin-left: 0.25rem;
+}
