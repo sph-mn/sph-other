@@ -3,11 +3,12 @@
   <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="initial-scale=1"/>
-    <title>{title}</title>
+    <title>jp shop urls</title>
 
     <style>
       html {
           font-size: 16px;
+          font-family: monospace;
       }
       body {
           background-color: black;
@@ -16,12 +17,16 @@
       body a {
           color: #ddd;
       }
-      body > * {
-          padding: 1rem;
-      }
       a:hover {
           text-decoration: none;
           color: #aaa;
+      }
+      .hidden {
+          display: none;
+      }
+      .link-button {
+          cursor: pointer;
+          text-decoration: underline;
       }
       #keywords {
     whitespace: nowrap;
@@ -37,6 +42,9 @@
 }
 #query_reset {
     margin-left: 0.25rem;
+}
+body > * {
+    padding: 1rem;
 }
 
     </style>

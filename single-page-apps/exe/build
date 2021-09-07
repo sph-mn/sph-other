@@ -11,12 +11,13 @@ source = program.args[0].replace(/[\/\\]/, "")
 
 config =
   source: source
-  target: "#{source}/#{path.basename(source)}.html"
+  target: "#{source}/compiled/#{path.basename(source)}.html"
   paths:
     style: "style.css"
     head: "head.html"
     body: "body.html"
     script: "script.js"
+    about: "about.html"
 
 read_files = (config) ->
   result = {}
@@ -26,11 +27,13 @@ read_files = (config) ->
   result
 
 build = (config) ->
+  fs.mkdirSync path.dirname(config.target), {recursive: true}
   data = read_files config
   content = fs.readFileSync "layout.html", "utf-8"
-  ["style", "head", "body", "script"].forEach (key) ->
+  ["style", "head", "body", "script", "about"].forEach (key) ->
     content = content.replace("{#{key}}", data[key] || "")
   on_error = (a) -> if a then console.error a
+  console.log config.target
   fs.writeFile config.target, content, on_error
 
 build config

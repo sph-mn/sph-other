@@ -13,3 +13,6 @@
 #query_reset {
     margin-left: 0.25rem;
 }
+body > * {
+    padding: 1rem;
+}
