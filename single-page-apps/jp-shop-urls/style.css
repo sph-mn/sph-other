@@ -1,18 +1,15 @@
-#keywords {
-    whitespace: nowrap;
+body > * {
+    padding: 0.5rem;
+}
+section > .label ~ * {
+    margin-left: 1rem;
+    margin-top: 10px;
+}
+#keyword_selection > .presets > a:not(:first-child) {
+    padding-left: 0.5rem;
     margin-bottom: 0.5rem;
-}
-#links > div:not(:first-child) {
-    padding-top: 0.5rem;
-}
-#keywords > div, #categories > div {
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
     display: inline-block;
 }
-#query_reset {
+#keyword_selection .reset {
     margin-left: 0.25rem;
-}
-body > * {
-    padding: 1rem;
 }

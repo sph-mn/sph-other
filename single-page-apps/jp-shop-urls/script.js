@@ -1,26 +1,41 @@
+// https://github.com/KoryNunn/crel 4.2.1
+(e => {
+  const t = "function",
+    n = "isNode",
+    o = (e, t) => typeof e === t,
+    r = (e, t) => {
+      null !== t && (Array.isArray(t) ? t.map(t => r(e, t)) : (i[n](t) || (t = document.createTextNode(t)), e.appendChild(t)))
+    };
+
+  function i(e, a) {
+    let d, f, l = arguments,
+      c = 1;
+    if (e = i.isElement(e) ? e : document.createElement(e), o(a, "object") && !i[n](a) && !Array.isArray(a))
+      for (d in c++, a) f = a[d], o(d = i.attrMap[d] || d, t) ? d(e, f) : o(f, t) ? e[d] = f : e.setAttribute(d, f);
+    for (; c < l.length; c++) r(e, l[c]);
+    return e
+  }
+  i.attrMap = {}, i.isElement = (e => e instanceof Element), i[n] = (e => e instanceof Node), i.proxy = new Proxy(i, {
+    get: (e, t) => (!(t in i) && (i[t] = i.bind(null, t)), i[t])
+  }), e(i, t)
+})((e, t) => {
+  "object" == typeof exports ? module.exports = e : typeof define === t && define.amd ? define(() => e) : this.crel = e
+});
+
 const config = {
-  translations: {
-    cuffs: "お袖とめ",
-    hair_ties: "ヘアゴム",
-    gloves: "グローブ",
-    accessories: "アクセサリー",
-    hair_accessories: "ヘアアクセサリー",
-    legwear: "レッグウェア",
-    one_piece: "ワンピース",
-    skirts: "スカート",
-    small_items: "小物",
-    tops: "トップス",
-    alice_and_the_pirates: "アリス アンド ザ パイレーツ",
-    angelic_pretty: "アンジェリック プリティ",
-    baby_the_stars_shine_bright: "ベイビーザスターズシャインブライト",
-    innocent_world: "イノセントワールド",
-    metamorphose: "メタモルフォーゼ タンドゥフィーユ",
-    none: "なし"
+  defaults: {
+    brands: [
+      "innocent_world",
+      "alice_and_the_pirates",
+      "metamorphose",
+      "angelic_pretty",
+      "baby_the_stars_shine_bright"
+    ]
   },
-  keywords: [
-    ["お袖とめ", "cuffs"],
-    ["ヘアゴム", "hair_ties"],
-    ["グローブ", "gloves"]
+  keyword_presets: [
+    "お袖とめ",
+    "ヘアゴム",
+    "グローブ"
   ],
   categories: [
     "accessories",
@@ -42,6 +57,10 @@ const config = {
         return `https://www.mercari.com/jp/search/?page=1&sort_order=created_desc&keyword=${keyword}&category_root=1&category_child=${category_child}&brand_name=${brand_name}&brand_id=${brand_id}&size_group=&price_min=&price_max=&status_on_sale=1`
       },
       brands: {
+        any: {
+          name: "",
+          id: ""
+        },
         alice_and_the_pirates: {
           name: "アリス+アンド+ザ+パイレーツ",
           id: 154
@@ -83,6 +102,7 @@ const config = {
         return `https://fril.jp/s?query=${query}&category_id=${category_id}&brand_id=${brand_id}&transaction=selling&sort=created_at&order=desc`
       },
       brands: {
+        any: "",
         innocent_world: 384,
         alice_and_the_pirates: 34,
         metamorphose: 533,
@@ -113,9 +133,10 @@ const config = {
         } else {
           category_id = config.shops.closetchild.brands[brand]
         }
-        return `https://www.closetchildonlineshop.com/product-list/${category_id}?available=1`
+        return `https://www.closetchildonlineshop.com/product-list/${category_id}?available=1&keyword=${query}`
       },
       brands: {
+        any: "",
         alice_and_the_pirates: 213,
         angelic_pretty: 190,
         baby_the_stars_shine_bright: 202,
@@ -187,11 +208,12 @@ const config = {
     },
     wunderwelt: {
       make_url: (brand, category, query) => {
-        brand_id = config.shops.wunderwelt.brands[brand]
-        category_id = config.shops.wunderwelt.categories[category] || ""
+        var brand_id = config.shops.wunderwelt.brands[brand]
+        var category_id = config.shops.wunderwelt.categories[category] || ""
         return `https://www.wunderwelt.jp/brands/${brand_id}/${category_id}?keywords=${query}`
       },
       brands: {
+        any: "lolita-fashion",
         alice_and_the_pirates: "alice-and-the-pirates",
         angelic_pretty: "angelic-pretty",
         baby_the_stars_shine_bright: "baby-the-stars-shine-bright",
@@ -222,93 +244,201 @@ const config = {
     metamorphose: {}
 */
 
-const shops = Object.keys(config.shops)
+const i18n = {
+  language: "jp",
+  translate: (key) => {
+    return i18n.translations[i18n.language][key] || (key && key.replace(/_/g, " "))
+  },
+  translations: {
+    jp: {
+      cuffs: "お袖とめ",
+      hair_ties: "ヘアゴム",
+      gloves: "グローブ",
+      accessories: "アクセサリー",
+      hair_accessories: "ヘアアクセサリー",
+      legwear: "レッグウェア",
+      one_piece: "ワンピース",
+      skirts: "スカート",
+      small_items: "小物",
+      tops: "トップス",
+      alice_and_the_pirates: "アリス アンド ザ パイレーツ",
+      angelic_pretty: "アンジェリック プリティ",
+      baby_the_stars_shine_bright: "ベイビーザスターズシャインブライト",
+      innocent_world: "イノセントワールド",
+      metamorphose: "メタモルフォーゼ タンドゥフィーユ",
+      any: "フリー",
+      keywords: "キーワード",
+      brands: "ブランド",
+      clear: "クリア"
+    },
+    en: {
+      "お袖とめ": "cuffs",
+      "ヘアゴム": "hair ties",
+      "グローブ": "gloves"
+    }
+  }
+}
 
-function make_links(query, category) {
-  const links = []
-  shops.forEach(shop => {
+const helper = {
+  make_section: (id, label) => {
+    let div = crel("div", {
+      "class": "label"
+    }, label)
+    return crel("section", {
+      id: id
+    }, div)
+  },
+  make_link_button: (label) => {
+    return crel("a", {
+      "class": "link-button",
+      href: "#"
+    }, label)
+  }
+}
 
-    const brands = Object.keys(config.shops[shop].brands).sort()
-    brands.forEach(brand => {
-      const url = config.shops[shop].make_url(brand, category, query)
-      const a = document.createElement("a")
-      const div = document.createElement("div")
-      a.href = url
-      a.innerHTML = [shop, config.translations[brand], config.translations[category], query].filter(a => a).join(" - ")
-      a.target = "_blank"
-      div.appendChild(a)
-      links.push(div)
+class keyword_selection_class {
+  dom = {}
+  build() {
+    let preset_links = config.keyword_presets.map(string => {
+      let link = helper.make_link_button(i18n.translate(string))
+      link.addEventListener("click", event => {
+        this.dom.input.value = string
+      })
+      return link
     })
-  })
-  return links
+    this.dom.presets = crel("div", {
+      "class": "presets"
+    }, preset_links)
+    this.dom.input = crel("input", {
+      "class": "input"
+    })
+    this.dom.input.addEventListener("keyup", event => {
+      this.update_links()
+    })
+    this.dom.reset = crel("button", {
+      "class": "reset"
+    }, i18n.translate("clear"))
+    this.dom.reset.addEventListener("click", event => {
+      this.dom.input.value = ""
+    })
+    let text_input = crel("div", this.dom.input, this.dom.reset)
+    let section = helper.make_section("keyword_selection", i18n.translate("keywords"))
+    section.appendChild(this.dom.presets)
+    section.appendChild(text_input)
+    this.dom.container = section
+  }
+  constructor() {
+    this.build()
+  }
 }
 
-const dom = {
-  query: document.getElementById("query"),
-  links: document.getElementById("links"),
-  keywords: document.getElementById("keywords"),
-  categories: document.getElementById("categories"),
-  query_reset: document.getElementById("query_reset")
+class brand_selection_class {
+  dom = {}
+  build() {
+    let brands = Object.keys(config.shops).map(shop => {
+      return Object.keys(config.shops[shop].brands)
+    }).flat()
+    brands = [...new Set(brands)]
+    let checkboxes = brands.map(brand => {
+      const input = crel("input", {
+        type: "checkbox",
+        value: brand
+      })
+      if (config.defaults.brands.includes(brand)) {
+        input.checked = true
+      }
+      return crel("label", {
+        "class": "checkboxes"
+      }, input, i18n.translate(brand))
+    })
+    this.dom.checkboxes = crel("div", {
+      "class": "checkboxes"
+    }, checkboxes)
+    let section = helper.make_section("brand_selection", i18n.translate("brands"))
+    section.appendChild(this.dom.checkboxes)
+    this.dom.container = section
+  }
+  get_selections() {
+    let checkboxes = this.dom.checkboxes.querySelectorAll("input:checked")
+    return Array.from(checkboxes).map(x => x.value)
+  }
+  constructor() {
+    this.build()
+  }
 }
 
-function update_links() {
-  const links = make_links(dom.query.value.trim(), dom.query.getAttribute("data-category"))
-  dom.links.innerHTML = ""
-  links.forEach(link => {
-    dom.links.appendChild(link)
-  })
+class category_selection_class {
+  dom = {}
+  build() {
+    let links = config.categories.map(name => {
+      let link = helper.make_link_button(i18n.translate(name))
+      link.addEventListener("click", event => {
+        this.currentCategory = name
+      })
+      return link
+    })
+    this.dom.links = crel("div", {
+      "class": "links"
+    }, links)
+    let section = helper.make_section("category_selection", i18n.translate("categories"))
+    section.appendChild(this.dom.links)
+    this.dom.container = section
+  }
+  constructor() {
+    this.build()
+  }
 }
 
-function make_keyword_element(value, name) {
-  const a = document.createElement("a")
-  a.href = "#"
-  a.innerHTML = name
-  a.addEventListener("click", event => {
-    dom.query.value = value
-    update_links()
-  })
-  const div = document.createElement("div")
-  div.appendChild(a)
-  return div
+
+class link_list_class {
+  dom = {
+  }
+  make_links(brands, category, keyword) {
+    return Object.keys(config.shops).map(shop => {
+      let links = brands.map(brand => {
+        if (!shop.brands[brand]) return
+        const url = config.shops[shop].make_url(brand, category, keyword)
+        const label = [shop, brand, category, keyword].filter(a => a).join(" - ")
+        return crel("a", {href: url, target: "_blank"}, label)
+      })
+      return links.filter(a => a)
+    }).flat()
+  }
+  build() {
+    this.dom.links = crel("div", {"class": "links"})
+    section = helper.make_section("link_list", i18n.translate("links"))
+    section.appendChild(this.dom.links)
+    this.dom.container = section
+  }
+  update() {
+    let keyword = app.keyword_selection.get_selections()
+    let category = app.category_selection.get_selections()
+    let brands = app.brand_selection.get_selections()
+    const links = this.make_links(brands, category, keyword)
+    this.dom.links.innerHTML = ""
+    links.forEach(link => {
+      this.dom.links.appendChild(link)
+    })
+  }
+  constructor(app) {
+    this.app = app
+    this.build()
+  }
 }
 
-function update_keywords() {
-  dom.keywords.innerHTML = ""
-  config.keywords.forEach(keyword => {
-    dom.keywords.appendChild(make_keyword_element(keyword[0], config.translations[keyword[1]]))
-  })
+class app_class {
+  dom = {
+    container: document.querySelector("body")
+  }
+  constructor() {
+    this.keyword_selection = new keyword_selection_class(this)
+    this.dom.container.appendChild(this.keyword_selection.dom.container)
+    this.brand_selection = new brand_selection_class(this)
+    this.dom.container.appendChild(this.brand_selection.dom.container)
+    this.category_selection = new category_selection_class(this)
+    this.dom.container.appendChild(this.category_selection.dom.container)
+    this.link_list = new link_list_class(this)
+  }
 }
 
-function make_category_element(value, name) {
-  const a = document.createElement("a")
-  a.href = "#"
-  a.innerHTML = name
-  a.addEventListener("click", event => {
-    dom.query.setAttribute("data-category", value)
-    update_links()
-  })
-  const div = document.createElement("div")
-  div.appendChild(a)
-  return div
-}
-
-function update_categories() {
-  dom.categories.innerHTML = ""
-  dom.categories.appendChild(make_category_element("", config.translations["none"]))
-  config.categories.forEach(category => {
-    dom.categories.appendChild(make_category_element(category, config.translations[category]))
-  })
-}
-
-dom.query.addEventListener("keyup", event => {
-  update_links()
-})
-
-dom.query_reset.addEventListener("click", event => {
-  dom.query.value = ""
-  update_links()
-})
-
-update_links()
-update_keywords()
-update_categories()
+new app_class
