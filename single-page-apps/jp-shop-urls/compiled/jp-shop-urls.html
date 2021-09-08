@@ -14,19 +14,17 @@
           background-color: black;
           color: #ddd;
       }
-      body a {
-          color: #ddd;
-      }
-      a:hover {
-          text-decoration: none;
-          color: #aaa;
-      }
       .hidden {
           display: none;
       }
-      .link-button {
+      .link-button, a {
+          color: #ddd;
           cursor: pointer;
           text-decoration: underline;
+      }
+      .link-button:hover, a:hover {
+          text-decoration: none;
+          color: #aaa;
       }
       body > * {
     padding: 0.5rem;
@@ -35,13 +33,20 @@ section > .label ~ * {
     margin-left: 1rem;
     margin-top: 10px;
 }
-#keyword_selection > .presets > a:not(:first-child) {
-    padding-left: 0.5rem;
-    margin-bottom: 0.5rem;
-    display: inline-block;
-}
 #keyword_selection .reset {
     margin-left: 0.25rem;
+}
+.vlist {
+    display: inline-block;
+}
+.vlist > * {
+    display: block;
+}
+.hlist > * {
+    display: inline-block;
+}
+.hlist > :not(:first-child) {
+    margin-left: 1rem;
 }
 
     </style>
@@ -283,17 +288,52 @@ const config = {
         small_items: 6,
         tops: 1
       }
-    }
+    },
+    baby_the_stars_shine_bright: {
+      make_url: (brand, category, query) => {
+        return `https://babyssb.shop/language/ja?q=${query}`
+      },
+      brands: {
+        baby_the_stars_shine_bright: true,
+        alice_and_the_pirates: true
+      }
+    },
+    angelic_pretty_paris: {
+      make_url: (brand, category, query) => {
+        query = i18n.translations.en[query] || query
+        return `https://angelicpretty-paris.com/gb/recherche?controller=search&orderby=position&orderway=desc&search_query=${query}`
+      },
+      brands: {
+        angelic_pretty: true
+      }
+    },
+    angelic_pretty: {
+      make_url: (brand, category, query) => {
+        return `https://angelicpretty-onlineshop.com/?s=${query}&post_type=product`
+      },
+      brands: {
+        angelic_pretty: true
+      }
+    },
+    metamorphose: {
+      make_url: (brand, category, query) => {
+        return `https://metamorphose.gr.jp/ja/product/all?metamorphose_search=${query}`
+      },
+      brands: {
+        metamorphose: true
+      }
+    },
+    innocent_world: {
+      make_url: (brand, category, query) => {
+        return `https://innocent-w.jp/fs/innocentworld/GoodsSearchList.html?_e_k=%EF%BC%A1&keyword=${query}&x=14&y=10`
+      },
+      brands: {
+        innocent_world: true
+      }
+    },
   }
 }
 
-/*
-    baby_the_stars_shine_bright: {},
-    angelic_pretty_paris: {},
-    angelic_pretty: {},
-    innocent_world: {},
-    metamorphose: {}
-*/
 
 const i18n = {
   language: "jp",
@@ -320,7 +360,12 @@ const i18n = {
       any: "フリー",
       keywords: "キーワード",
       brands: "ブランド",
-      clear: "クリア"
+      clear: "クリア",
+      categories: "カテゴリー",
+      links: "リンク",
+      rakuma: "ラクマ",
+      mercari: "メルカリ",
+      wunderwelt: "ワンダーウェルト"
     },
     en: {
       "お袖とめ": "cuffs",
@@ -340,37 +385,41 @@ const helper = {
     }, div)
   },
   make_link_button: (label) => {
-    return crel("a", {
-      "class": "link-button",
-      href: "#"
+    return crel("span", {
+      "class": "link-button"
     }, label)
   }
 }
 
 class keyword_selection_class {
   dom = {}
+  get_selections() {
+    return this.dom.input.value
+  }
   build() {
     let preset_links = config.keyword_presets.map(string => {
       let link = helper.make_link_button(i18n.translate(string))
       link.addEventListener("click", event => {
         this.dom.input.value = string
+        this.app.link_list.update()
       })
       return link
     })
     this.dom.presets = crel("div", {
-      "class": "presets"
+      "class": "presets hlist"
     }, preset_links)
     this.dom.input = crel("input", {
       "class": "input"
     })
     this.dom.input.addEventListener("keyup", event => {
-      this.update_links()
+      this.app.link_list.update()
     })
     this.dom.reset = crel("button", {
       "class": "reset"
     }, i18n.translate("clear"))
     this.dom.reset.addEventListener("click", event => {
       this.dom.input.value = ""
+      this.app.link_list.update()
     })
     let text_input = crel("div", this.dom.input, this.dom.reset)
     let section = helper.make_section("keyword_selection", i18n.translate("keywords"))
@@ -378,7 +427,8 @@ class keyword_selection_class {
     section.appendChild(text_input)
     this.dom.container = section
   }
-  constructor() {
+  constructor(app) {
+    this.app = app
     this.build()
   }
 }
@@ -398,12 +448,13 @@ class brand_selection_class {
       if (config.defaults.brands.includes(brand)) {
         input.checked = true
       }
-      return crel("label", {
-        "class": "checkboxes"
-      }, input, i18n.translate(brand))
+      input.addEventListener("change", event => {
+        this.app.link_list.update()
+      })
+      return crel("label", input, i18n.translate(brand))
     })
     this.dom.checkboxes = crel("div", {
-      "class": "checkboxes"
+      "class": "checkboxes hlist"
     }, checkboxes)
     let section = helper.make_section("brand_selection", i18n.translate("brands"))
     section.appendChild(this.dom.checkboxes)
@@ -413,58 +464,63 @@ class brand_selection_class {
     let checkboxes = this.dom.checkboxes.querySelectorAll("input:checked")
     return Array.from(checkboxes).map(x => x.value)
   }
-  constructor() {
+  constructor(app) {
+    this.app = app
     this.build()
   }
 }
 
 class category_selection_class {
   dom = {}
+  get_selections() {
+    return this.currentCategory
+  }
   build() {
     let links = config.categories.map(name => {
       let link = helper.make_link_button(i18n.translate(name))
       link.addEventListener("click", event => {
         this.currentCategory = name
+        this.app.link_list.update()
       })
       return link
     })
     this.dom.links = crel("div", {
-      "class": "links"
+      "class": "links hlist"
     }, links)
     let section = helper.make_section("category_selection", i18n.translate("categories"))
     section.appendChild(this.dom.links)
     this.dom.container = section
   }
-  constructor() {
+  constructor(app) {
+    this.app = app
     this.build()
   }
 }
 
-
 class link_list_class {
-  dom = {
-  }
+  dom = {}
   make_links(brands, category, keyword) {
-    return Object.keys(config.shops).map(shop => {
+    return Object.keys(config.shops).map(shop_key => {
+      let shop = config.shops[shop_key]
       let links = brands.map(brand => {
-        if (!shop.brands[brand]) return
-        const url = config.shops[shop].make_url(brand, category, keyword)
-        const label = [shop, brand, category, keyword].filter(a => a).join(" - ")
+        if (!shop.brands || !shop.brands[brand]) return
+        const url = shop.make_url(brand, category, keyword)
+        const label = [shop_key, brand, category, keyword].filter(a => a).map(i18n.translate).join(" - ")
         return crel("a", {href: url, target: "_blank"}, label)
       })
       return links.filter(a => a)
     }).flat()
   }
   build() {
-    this.dom.links = crel("div", {"class": "links"})
-    section = helper.make_section("link_list", i18n.translate("links"))
+    this.dom.links = crel("div", {"class": "links vlist"})
+    let section = helper.make_section("link_list", i18n.translate("links"))
     section.appendChild(this.dom.links)
     this.dom.container = section
   }
   update() {
-    let keyword = app.keyword_selection.get_selections()
-    let category = app.category_selection.get_selections()
-    let brands = app.brand_selection.get_selections()
+    let keyword = this.app.keyword_selection.get_selections()
+    let category = this.app.category_selection.get_selections()
+    let brands = this.app.brand_selection.get_selections()
     const links = this.make_links(brands, category, keyword)
     this.dom.links.innerHTML = ""
     links.forEach(link => {
@@ -474,6 +530,7 @@ class link_list_class {
   constructor(app) {
     this.app = app
     this.build()
+    this.update()
   }
 }
 
@@ -489,6 +546,7 @@ class app_class {
     this.category_selection = new category_selection_class(this)
     this.dom.container.appendChild(this.category_selection.dom.container)
     this.link_list = new link_list_class(this)
+    this.dom.container.appendChild(this.link_list.dom.container)
   }
 }
 
