@@ -33,11 +33,14 @@ const config = {
     ]
   },
   keyword_presets: [
+    "any",
     "お袖とめ",
     "ヘアゴム",
+    "手袋",
     "グローブ"
   ],
   categories: [
+    "any",
     "accessories",
     "hair_accessories",
     "legwear",
@@ -127,6 +130,7 @@ const config = {
     },
     closetchild: {
       make_url: (brand, category, query) => {
+        if (!query) return
         var category_id
         if (category) {
           category_id = config.shops.closetchild.categories[brand][category]
@@ -208,6 +212,7 @@ const config = {
     },
     wunderwelt: {
       make_url: (brand, category, query) => {
+        if (!query) return
         var brand_id = config.shops.wunderwelt.brands[brand]
         var category_id = config.shops.wunderwelt.categories[category] || ""
         return `https://www.wunderwelt.jp/brands/${brand_id}/${category_id}?keywords=${query}`
@@ -235,6 +240,7 @@ const config = {
     },
     baby_the_stars_shine_bright: {
       make_url: (brand, category, query) => {
+        if (!query) return
         return `https://babyssb.shop/language/ja?q=${query}`
       },
       brands: {
@@ -244,6 +250,7 @@ const config = {
     },
     angelic_pretty_paris: {
       make_url: (brand, category, query) => {
+        if (!query) return
         query = i18n.translations.en[query] || query
         return `https://angelicpretty-paris.com/gb/recherche?controller=search&orderby=position&orderway=desc&search_query=${query}`
       },
@@ -253,7 +260,8 @@ const config = {
     },
     angelic_pretty: {
       make_url: (brand, category, query) => {
-        return `https://angelicpretty-onlineshop.com/?s=${query}&post_type=product`
+        if (!query) return
+        return `https://angelicpretty-onlineshop.com/?orderby=date&s=${query}&post_type=product`
       },
       brands: {
         angelic_pretty: true
@@ -261,6 +269,7 @@ const config = {
     },
     metamorphose: {
       make_url: (brand, category, query) => {
+        if (!query) return
         return `https://metamorphose.gr.jp/ja/product/all?metamorphose_search=${query}`
       },
       brands: {
@@ -269,6 +278,7 @@ const config = {
     },
     innocent_world: {
       make_url: (brand, category, query) => {
+        if (!query) return
         return `https://innocent-w.jp/fs/innocentworld/GoodsSearchList.html?_e_k=%EF%BC%A1&keyword=${query}&x=14&y=10`
       },
       brands: {
@@ -313,7 +323,8 @@ const i18n = {
     en: {
       "お袖とめ": "cuffs",
       "ヘアゴム": "hair ties",
-      "グローブ": "gloves"
+      "手袋": "gloves1",
+      "グローブ": "gloves2"
     }
   }
 }
@@ -343,7 +354,7 @@ class keyword_selection_class {
     let preset_links = config.keyword_presets.map(string => {
       let link = helper.make_link_button(i18n.translate(string))
       link.addEventListener("click", event => {
-        this.dom.input.value = string
+        this.dom.input.value = "any" == string ? "" : string
         this.app.link_list.update()
       })
       return link
@@ -357,17 +368,9 @@ class keyword_selection_class {
     this.dom.input.addEventListener("keyup", event => {
       this.app.link_list.update()
     })
-    this.dom.reset = crel("button", {
-      "class": "reset"
-    }, i18n.translate("clear"))
-    this.dom.reset.addEventListener("click", event => {
-      this.dom.input.value = ""
-      this.app.link_list.update()
-    })
-    let text_input = crel("div", this.dom.input, this.dom.reset)
     let section = helper.make_section("keyword_selection", i18n.translate("keywords"))
     section.appendChild(this.dom.presets)
-    section.appendChild(text_input)
+    section.appendChild(this.dom.input)
     this.dom.container = section
   }
   constructor(app) {
@@ -443,12 +446,15 @@ class category_selection_class {
 class link_list_class {
   dom = {}
   make_links(brands, category, keyword) {
+    if ("any" == category) category = ""
     return Object.keys(config.shops).map(shop_key => {
       let shop = config.shops[shop_key]
       let links = brands.map(brand => {
-        if (!shop.brands || !shop.brands[brand]) return
+        if (!shop.brands || undefined == shop.brands[brand]) return
         const url = shop.make_url(brand, category, keyword)
-        const label = [shop_key, brand, category, keyword].filter(a => a).map(i18n.translate).join(" - ")
+        if (!url) return
+        let label_brand = "any" == brand ? "" : brand
+        const label = [shop_key, label_brand, category, keyword].filter(a => a).map(i18n.translate).join(" - ")
         return crel("a", {href: url, target: "_blank"}, label)
       })
       return links.filter(a => a)
