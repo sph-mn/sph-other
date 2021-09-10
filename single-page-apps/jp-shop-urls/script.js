@@ -34,10 +34,12 @@ const config = {
   },
   keyword_presets: [
     "any",
+    "ブラウス",
     "お袖とめ",
     "ヘアゴム",
     "手袋",
-    "グローブ"
+    "グローブ",
+    "ボレロ"
   ],
   categories: [
     "any",
@@ -47,14 +49,22 @@ const config = {
     "one_piece",
     "skirts",
     "small_items",
-    "tops"
+    "tops",
+    "blouse"
   ],
   shops: {
     mercari: {
       make_url: function(brand, category, query) {
-        category_child = config.shops.mercari.categories[category] || ""
+        let category_ids = config.shops.mercari.categories[category] || ""
+        let category_child
+        if (Array.isArray(category_ids)) {
+          category_child = category_ids[0] + "&" + category_ids.slice(1).map(x => `category_grand_child[${x}]=1`).join("&")
+        }
+        else {
+          category_child = category_ids
+        }
         brand_config = config.shops.mercari.brands[brand]
-        brand_name = encodeURIComponent(brand_config.name)
+        brand_name = brand_config.name
         brand_id = brand_config.id
         keyword = query
         return `https://www.mercari.com/jp/search/?page=1&sort_order=created_desc&keyword=${keyword}&category_root=1&category_child=${category_child}&brand_name=${brand_name}&brand_id=${brand_id}&size_group=&price_min=&price_max=&status_on_sale=1`
@@ -95,7 +105,8 @@ const config = {
         shoes: 16,
         skirt: 14,
         small_items: 23,
-        tops: 11
+        tops: 11,
+        blouse: [11, 121, 122]
       }
     },
     rakuma: {
@@ -130,14 +141,26 @@ const config = {
     },
     closetchild: {
       make_url: (brand, category, query) => {
-        if (!query) return
-        var category_id
-        if (category) {
-          category_id = config.shops.closetchild.categories[brand][category]
-        } else {
-          category_id = config.shops.closetchild.brands[brand]
+        let categories = config.shops.closetchild.categories
+        let brands = config.shops.closetchild.brands
+        let category_id
+        if (category && brand && categories[brand] && categories[brand][category]) {
+          category_id = categories[brand][category]
         }
-        return `https://www.closetchildonlineshop.com/product-list/${category_id}?available=1&keyword=${query}`
+        else if (category && categories[category]) {
+          category_id = categories[category]
+        }
+        else if (brand && brands[brand]) {
+          category_id = brands[brand]
+        }
+        else {
+          category_id = ""
+        }
+        let url = `https://www.closetchildonlineshop.com/product-list/${category_id}?available=1`
+        if (query) {
+          url += "&keyword=" + query
+        }
+        return url
       },
       brands: {
         any: "",
@@ -148,65 +171,87 @@ const config = {
         metamorphose: 279
       },
       categories: {
+        one_piece: 1,
+        skirt: 3,
+        blouse: 2,
+        tops: 5,
+        pants: 10,
+        jacket: 6,
+        shoes: 51,
+        bags: 51,
+        accessories: 52,
+        hair_accessories: 52,
+        legwear: 52,
+        small_items: 223,
         alice_and_the_pirates: {
-          accessories: 8,
-          bags: 5,
-          hair_accessories: 9,
-          legwear: 15,
-          one_piece: 2,
-          pants: 3,
-          shoes: 7,
-          skirt: 4,
-          small_items: 6,
-          tops: 1
+          one_piece: 214,
+          skirt: 215,
+          blouse: 216,
+          tops: 217,
+          pants: 219,
+          jacket: 220,
+          shoes: 220,
+          bags: 222,
+          accessories: 223,
+          hair_accessories: 223,
+          legwear: 223,
+          small_items: 223
         },
         angelic_pretty: {
-          accessories: 8,
-          bags: 5,
-          hair_accessories: 9,
-          legwear: 15,
-          one_piece: 2,
-          pants: 3,
-          shoes: 7,
-          skirt: 4,
-          small_items: 6,
-          tops: 1
+          one_piece: 191,
+          skirt: 192,
+          blouse: 193,
+          tops: 194,
+          pants: 196,
+          jacket: 197,
+          shoes: 200,
+          bags: 200,
+          accessories: 201,
+          hair_accessories: 201,
+          legwear: 201,
+          small_items: 201
         },
         baby_the_stars_shine_bright: {
-          accessories: 8,
-          bags: 5,
-          hair_accessories: 9,
-          legwear: 15,
-          one_piece: 2,
-          pants: 3,
-          shoes: 7,
-          skirt: 4,
-          small_items: 6,
-          tops: 1
+          one_piece: 203,
+          skirt: 204,
+          blouse: 205,
+          tops: 206,
+          pants: 208,
+          jacket: 209,
+          shoes: 211,
+          bags: 211,
+          accessories: 212,
+          hair_accessories: 212,
+          legwear: 212,
+          small_items: 212
         },
         innocent_world: {
-          accessories: 8,
-          bags: 5,
-          hair_accessories: 9,
-          legwear: 15,
-          one_piece: 2,
-          pants: 3,
-          shoes: 7,
-          skirt: 4,
-          small_items: 6,
-          tops: 1
+          one_piece: 236,
+          skirt: 237,
+          blouse: 238,
+          tops: 239,
+          pants: 241,
+          jacket: 242,
+          shoes: 244,
+          bags: 244,
+          accessories: 245,
+          hair_accessories: 245,
+          legwear: 245,
+          small_items: 245
         },
         metamorphose: {
-          accessories: 8,
-          bags: 5,
-          hair_accessories: 9,
-          legwear: 15,
-          one_piece: 2,
-          pants: 3,
-          shoes: 7,
-          skirt: 4,
-          small_items: 6,
-          tops: 1
+          one_piece: 280,
+          skirt: 281,
+          blouse: 282,
+          tops: 283,
+          pants: 285,
+          jacket: 286,
+          shoes: 288,
+          bags: 288,
+          accessories: 289,
+          hair_accessories: 289,
+          legwear: 289,
+          small_items: 289
         }
       }
     },
@@ -321,6 +366,8 @@ const i18n = {
       wunderwelt: "ワンダーウェルト"
     },
     en: {
+      "ブラウス": "blouse",
+      "ボレロ": "bolero",
       "お袖とめ": "cuffs",
       "ヘアゴム": "hair ties",
       "手袋": "gloves1",
@@ -454,14 +501,20 @@ class link_list_class {
         const url = shop.make_url(brand, category, keyword)
         if (!url) return
         let label_brand = "any" == brand ? "" : brand
-        const label = [shop_key, label_brand, category, keyword].filter(a => a).map(i18n.translate).join(" - ")
-        return crel("a", {href: url, target: "_blank"}, label)
+        let label_category = shop.categories ? category : ""
+        const label = [shop_key, label_brand, label_category, keyword].filter(a => a).map(i18n.translate).join(" - ")
+        return crel("a", {
+          href: url,
+          target: "_blank"
+        }, label)
       })
       return links.filter(a => a)
     }).flat()
   }
   build() {
-    this.dom.links = crel("div", {"class": "links vlist"})
+    this.dom.links = crel("div", {
+      "class": "links vlist"
+    })
     let section = helper.make_section("link_list", i18n.translate("links"))
     section.appendChild(this.dom.links)
     this.dom.container = section
