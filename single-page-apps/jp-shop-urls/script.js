@@ -286,7 +286,7 @@ const config = {
     baby_the_stars_shine_bright: {
       make_url: (brand, category, query) => {
         if (!query) return
-        return `https://babyssb.shop/language/ja?q=${query}`
+        return `https://babyssb.shop/language/ja?q=${query}&search_button.x=11&search_button.y=8`
       },
       brands: {
         baby_the_stars_shine_bright: true,
