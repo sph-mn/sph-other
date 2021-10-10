@@ -1,9 +1,9 @@
 body > * {
-    padding: 0.5rem;
+    margin-top: 5px;
 }
 section > .label ~ * {
     margin-left: 1rem;
-    margin-top: 10px;
+    margin-top: 2px;
 }
 #keyword_selection .reset {
     margin-left: 0.25rem;
@@ -14,12 +14,12 @@ section > .label ~ * {
 .vlist > * {
     display: block;
 }
-.vlist > :not(:first-child) {
-    margin-top: 10px;
-}
 .hlist > * {
     display: inline-block;
 }
 .hlist > :not(:first-child) {
-    margin-left: 1rem;
+    margin-left: 10px;
+}
+input {
+    border: none;
 }
