@@ -120,31 +120,77 @@ const list = {
 }
 
 const app = {
+  download: (filename, text) => {
+    var element = document.createElement("a")
+    element.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text))
+    element.setAttribute("download", filename)
+    element.style.display = "none"
+    document.body.appendChild(element)
+    element.click()
+    document.body.removeChild(element)
+  },
   dom: {
-    select_file: document.getElementById("select_file")
-  },
-  about_init: () => {
-    var about_link = document.getElementById("about_link")
-    var about = document.getElementById("about")
-    about_link.addEventListener("click", function() {about.classList.toggle("hidden")})
-  },
-  open_file: data => {
-    data.errors.forEach(error => {
-      console.error(error)
-    })
-    list.set_content(data.data)
+    select_file: document.getElementById("select_file"),
+    save_file: document.getElementById("save_file"),
+    open_file: document.getElementById("open_file"),
+    download_file: document.getElementById("download_file")
   },
   csv_config: {
     delimiter: " ",
   },
+  about_init: () => {
+    var about_link = document.getElementById("about_link")
+    var about = document.getElementById("about")
+    about_link.addEventListener("click", function() {
+      about.classList.toggle("hidden")
+    })
+  },
+  save_file: data => {
+    localStorage.setItem("file_name", app.current_file_name)
+    localStorage.setItem("file_content", JSON.stringify(data))
+  },
+  open_file: () => {
+    content = localStorage.getItem("file_content")
+    name = localStorage.getItem("file_name")
+    if (!content || !name) return
+    app.current_file_name = name
+    list.set_content(JSON.parse(content))
+  },
+  download_file: () => {
+    const dsv = Papa.unparse(list.get_content())
+    app.download(app.current_file_name, dsv)
+  },
+  upload_file: file => {
+    app.current_file_name = file.name
+    app.csv_config.complete = data => {
+      data.errors.forEach(error => {
+        console.error(error)
+      })
+      list.set_content(data.data)
+      app.save_file(list.get_content())
+    }
+    Papa.parse(file, app.csv_config)
+  },
   init: () => {
-    app.csv_config.complete = app.open_file
+    app.csv_config.complete = app.load_file
     app.dom.select_file.addEventListener("change", event => {
       const files = event.target.files
       if (!files.length) return
-      Papa.parse(files[0], app.csv_config)
+      app.upload_file(files[0])
+    })
+    app.dom.save_file.addEventListener("click", event => {
+      app.dom.save_file.classList.add("active")
+      app.save_file(list.get_content())
+      app.dom.save_file.classList.remove("active")
+    })
+    app.dom.download_file.addEventListener("click", event => {
+      app.download_file()
+    })
+    app.dom.open_file.addEventListener("click", event => {
+      document.getElementById("select_file").click()
     })
     list.init()
+    app.open_file()
     app.about_init()
   }
 }

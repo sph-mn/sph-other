@@ -1,10 +1,17 @@
 <div id="top_bar">
-  <input id="select_file" type="file"/>
+  <input id="select_file" type="file" class="hidden"/>
+  <div id="open_file" class="link-button">open</div>
+  <div id="save_file" class="link-button">save</div>
+  <div id="download_file" class="link-button">download</div>
+  <a id="dictionary_link" href="http://sph.mn/other/kanji-viewer.html" target="_blank">dictionary</a>
   <div id="about_link" class="link-button">about</div>
   <div id="about" class="hidden">
-    open space delimited csv files and hide all columns except the first
-    show line content with the space key
-    navigate between lines with the up and down arrow keys
+    open space delimited csv files and hide all columns except the first.
+    show line content with the space key.
+    navigate between lines with the up and down arrow keys.
+    move lines up or down with ctrl+up or ctrl+down.
+    files are saved in the browser cache for next use.
+    files can be downloaded.
   </div>
 </div>
 <div id="file_content"></div>

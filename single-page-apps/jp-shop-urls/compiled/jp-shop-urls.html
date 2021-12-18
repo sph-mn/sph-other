@@ -36,6 +36,9 @@ section > .label ~ * {
 #keyword_selection .reset {
     margin-left: 0.25rem;
 }
+#keyword_selection .example_keywords {
+    display: inline-block;
+}
 .vlist {
     display: inline-block;
 }
@@ -55,7 +58,10 @@ input {
     </style>
   </head>
   <body>
-    
+    <ul>
+  <li>other brands can be searched for with the keywords field and selecting brand "any"</li>
+</ul>
+
     <script>
       // https://github.com/KoryNunn/crel 4.2.1
 (e => {
@@ -83,6 +89,7 @@ input {
 
 const config = {
   defaults: {
+    max_price: 50000,
     brands: [
       "innocent_world",
       "alice_and_the_pirates",
@@ -96,16 +103,18 @@ const config = {
     "any",
     "blouse",
     "pumpkin_pants",
+    "bag",
     "bolero",
     "cape",
     "coat",
-    "gloves2",
     "gloves",
     "hair_accessories",
     "hair_ties",
     "half_pants",
+    "hat",
     "jacket",
     "jewelry",
+    "jumper_skirt",
     "legwear",
     "one_piece",
     "ouji_style",
@@ -116,15 +125,21 @@ const config = {
     "skirt",
     "socks",
     "tights",
-    "tops",
+    "top",
     "vest",
     "wristbands"
+  ],
+  example_keywords: [
+    "pink",
+    "sax",
+    "light_blue"
   ],
   shops: {
     rakuma: {
       make_url: (brand, category, keywords) => {
         brand_id = config.shops.rakuma.brands[brand]
         let category_id
+        category = config.shops.rakuma.category_alias[category] || category
         if (category) {
           category_id = config.shops.rakuma.categories[category]
           if (!category_id) {
@@ -134,7 +149,7 @@ const config = {
         } else {
           category_id = config.shops.rakuma.root_categories.ladies
         }
-        return `https://fril.jp/s?query=${keywords}&category_id=${category_id}&brand_id=${brand_id}&transaction=selling&sort=created_at&order=desc`
+        return `https://fril.jp/s?query=${keywords}&category_id=${category_id}&brand_id=${brand_id}&transaction=selling&sort=created_at&order=desc&max=${config.defaults.max_price}`
       },
       brands: {
         any: "",
@@ -144,25 +159,34 @@ const config = {
         angelic_pretty: 49,
         baby_the_stars_shine_bright: 81
       },
+      other_brand_as_keyword: true,
       root_categories: {
         ladies: 10001
       },
+      category_alias: {
+        blouse: "top",
+        socks: "legwear",
+        jumper_skirt: "one_piece",
+        vest: "top",
+        jewelry: "accessories"
+      },
       categories: {
-        jewelry: 8,
-        bags: 5,
+        accessories: 8,
+        bags: 7,
         hair_accessories: 9,
         legwear: 11,
-        one_piece: 2,
-        pants: 3,
+        one_piece: 3,
+        jacket: 2,
+        pants: 5,
         shoes: 4,
         skirt: 6,
-        accessories: 8,
-        tops: 1,
-        vest: 1
+        top: 1,
+        hat: 12
       }
     },
     mercari: {
       make_url: function(brand, category, keywords) {
+        category = config.shops.mercari.category_alias[category] || category
         let cat_0 = 1
         let category_params = "&t1_category_id=" + cat_0
         if (category) {
@@ -192,15 +216,16 @@ const config = {
         } else {
           keywords = (brand_config.name + " " + keywords).trim()
         }
-        return `https://www.mercari.com/jp/search?keyword=${keywords}&page=1&sort_order=created_desc&${category_params}&brand_name=${brand_name}&brand_id=${brand_id}&size_group=&price_min=&price_max=&status=on_sale`
+        return `https://www.mercari.com/jp/search?keyword=${keywords}&page=1&sort_order=created_desc&${category_params}&brand_name=${brand_name}&brand_id=${brand_id}&size_group=&price_min=&price_max=${config.defaults.max_price}&status=on_sale`
       },
+      other_brand_as_keyword: true,
       brands: {
         any: {
           name: "",
           id: ""
         },
         alice_and_the_pirates: {
-          name: "アリス+アンド+ザ+パイレーツ",
+          name: "アリス アンド ザ パイレーツ",
           id: 154
         },
         angelic_pretty: {
@@ -228,19 +253,24 @@ const config = {
           id: 6065
         }
       },
+      category_alias: {
+        socks: "legwear",
+        overknee_socks: "legwear",
+        tights: "legwear",
+        jumper_skirt: "one_piece"
+      },
       categories: {
         accessories: 21,
         bags: 20,
         hair_accessories: 22,
         legwear: 18,
-        tights: 18,
-        overknee_socks: 18,
         one_piece: 15,
         pants: 13,
         shoes: 16,
         skirt: 14,
         accessories: 23,
-        tops: 11,
+        top: 11,
+        hat: 19,
         blouse: {
           cat_1: 11,
           cat_2: [121, 122]
@@ -290,8 +320,7 @@ const config = {
         }
         if ("any" == brand) {
           return `https://www.closetchildonlineshop.com/product-group/${category_id}?available=1`
-        }
-        else {
+        } else {
           return `https://www.closetchildonlineshop.com/product-list/${category_id}?available=1`
         }
       },
@@ -303,6 +332,7 @@ const config = {
         innocent_world: 235,
         metamorphose: 279
       },
+      other_brand_as_keyword: true,
       category_alias: {
         jumper_skirt: "one_piece",
         bags: "shoes",
@@ -340,7 +370,7 @@ const config = {
           innocent_world: 238,
           metamorphose: 282
         },
-        tops: {
+        top: {
           any: 5,
           alice_and_the_pirates: 217,
           angelic_pretty: 194,
@@ -467,89 +497,97 @@ const config = {
           any: "blouse-used"
         }
       }
-    }
-  },
-  baby_the_stars_shine_bright: {
-    make_url: (brand, category, keywords) => {
-      if (!keywords) return
-      return `https://babyssb.shop/language/ja?q=${keywords}&search_button.x=11&search_button.y=8`
     },
-    brands: {
-      baby_the_stars_shine_bright: true,
-      alice_and_the_pirates: true
-    }
-  },
-  angelic_pretty_paris: {
-    make_url: (brand, category, keywords) => {
-      if (!keywords) return
-      shop_keywords = i18n.translations.en[keywords] || keywords
-      return `https://angelicpretty-paris.com/gb/recherche?controller=search&orderby=position&orderway=desc&search_query=${shop_keywords}`
-    },
-    brands: {
-      angelic_pretty: true
-    }
-  },
-  angelic_pretty: {
-    make_url: (brand, category, keywords) => {
-      if (!keywords) return
-      return `https://angelicpretty-onlineshop.com/?orderby=date&s=${keywords}&post_type=product`
-    },
-    brands: {
-      angelic_pretty: true
-    }
-  },
-  metamorphose: {
-    make_url: (brand, category, keywords) => {
-      if (!keywords && category) keywords = i18n.translations.jp[category]
-      if (!keywords) return
-      return `https://metamorphose.gr.jp/ja/product/all?metamorphose_search=${keywords}&op=+`
-    },
-    brands: {
-      metamorphose: true
-    }
-  },
-  innocent_world: {
-    make_url: (brand, category, keywords) => {
-      if (keywords) {
-        return `https://innocent-w.jp/fs/innocentworld/GoodsSearchList.html?_e_k=%EF%BC%A1&keyword=${keywords}&x=14&y=10`
-      } else if (category) {
-        let category_id = config.shops.innocent_world.categories[category]
-        if (!category_id) return
-        return `https://innocent-w.jp/fs/innocentworld/c/${category_id}`
+    baby_the_stars_shine_bright: {
+      make_url: (brand, category, keywords) => {
+        const categories = config.shops.baby_the_stars_shine_bright.categories
+        if (category) {
+          let category_id = categories[category]
+          return `https://babyssb.shop/category/select/cid/${category_id}`
+        }
+        if (!keywords) return
+        return `https://babyssb.shop/language/ja?q=${keywords}&search_button.x=11&search_button.y=8`
+      },
+      brands: {
+        baby_the_stars_shine_bright: true,
+        alice_and_the_pirates: true
+      },
+      categories: {
+        skirt: 343
       }
     },
-    brands: {
-      innocent_world: true
+    angelic_pretty_paris: {
+      make_url: (brand, category, keywords) => {
+        if (!keywords) return
+        shop_keywords = i18n.translations.en[keywords] || keywords
+        return `https://angelicpretty-paris.com/gb/recherche?controller=search&orderby=position&orderway=desc&search_query=${shop_keywords}`
+      },
+      brands: {
+        angelic_pretty: true
+      }
     },
-    categories: {
-      one_piece: "one-piece",
-      jumper_skirt: "jumperskirt",
-      blouse: "top",
-      tops: "top",
-      pants: "bottom",
-      skirt: "bottom",
-      jacket: "outer",
-      shoes: "shoes",
-      bags: "bag",
-      accessories: "ac",
-      hair_accessories: "hd",
-      legwear: "shoes",
-      socks: "shoes",
-      overknee_socks: "shoes",
-      jewelry: "other"
-    }
-  },
-  atelier_pierrot: {
-    make_url: (brand, category, keywords) => {
-      // keyword argument must be EUC-JP encoded, no idea how to achieve that
-      return
-      if (!keywords) return
-      window.location.href = `https://atelier-pierrot.shop-pro.jp/?mode=srh&sort=n&cid=&keyword=${keywords}`
-      return `https://atelier-pierrot.shop-pro.jp/?mode=srh&sort=n&cid=&keyword=${keywords}`
+    angelic_pretty: {
+      make_url: (brand, category, keywords) => {
+        if (!keywords) return
+        return `https://angelicpretty-onlineshop.com/?orderby=date&s=${keywords}&post_type=product`
+      },
+      brands: {
+        angelic_pretty: true
+      }
     },
-    brands: {
-      any: "",
-      marble: "マーブル"
+    metamorphose: {
+      make_url: (brand, category, keywords) => {
+        if (!keywords && category) keywords = i18n.translations.jp[category]
+        if (!keywords) return
+        return `https://metamorphose.gr.jp/ja/product/all?metamorphose_search=${keywords}&op=+`
+      },
+      brands: {
+        metamorphose: true
+      }
+    },
+    innocent_world: {
+      make_url: (brand, category, keywords) => {
+        if (keywords) {
+          return `https://innocent-w.jp/fs/innocentworld/GoodsSearchList.html?_e_k=%EF%BC%A1&keyword=${keywords}&x=14&y=10`
+        } else if (category) {
+          let category_id = config.shops.innocent_world.categories[category]
+          if (!category_id) return
+          return `https://innocent-w.jp/fs/innocentworld/c/${category_id}`
+        }
+      },
+      brands: {
+        innocent_world: true
+      },
+      categories: {
+        one_piece: "one-piece",
+        jumper_skirt: "jumperskirt",
+        blouse: "top",
+        top: "top",
+        pants: "bottom",
+        skirt: "bottom",
+        jacket: "outer",
+        shoes: "shoes",
+        bags: "bag",
+        accessories: "ac",
+        hair_accessories: "hd",
+        legwear: "shoes",
+        socks: "shoes",
+        overknee_socks: "shoes",
+        jewelry: "other"
+      }
+    },
+    atelier_pierrot: {
+      make_url: (brand, category, keywords) => {
+        // keyword argument must be EUC-JP encoded, no idea how to achieve that
+        return
+        if (!keywords) return
+        window.location.href = `https://atelier-pierrot.shop-pro.jp/?mode=srh&sort=n&cid=&keyword=${keywords}`
+        return `https://atelier-pierrot.shop-pro.jp/?mode=srh&sort=n&cid=&keyword=${keywords}`
+      },
+      brands: {
+        any: "",
+        marble: "マーブル"
+      }
     }
   }
 }
@@ -564,6 +602,7 @@ const i18n = {
       half_pants: "ハーフパンツ",
       jacket: "ジャケット",
       wristbands: "お袖とめ",
+      bag: "バッグ",
       tights: "タイツ",
       socks: "ソックス",
       skirt: "スカート",
@@ -588,7 +627,7 @@ const i18n = {
       clear: "クリア",
       cuffs: "お袖とめ",
       gloves: "グローブ",
-      gloves2: "手袋",
+      hat: "帽子",
       hair_accessories: "ヘアアクセサリー",
       hair_ties: "ヘアゴム",
       innocent_world: "イノセントワールド",
@@ -601,9 +640,12 @@ const i18n = {
       metamorphose: "メタモルフォーゼ タンドゥフィーユ",
       one_piece: "ワンピース",
       rakuma: "ラクマ",
-      skirts: "スカート",
-      tops: "トップス",
+      jumper_skirt: "ジャンパースカート",
+      top: "トップス",
       vest: "ベスト",
+      sax: "サックス",
+      light_blue: "水色",
+      pink: "ピンク",
       wunderwelt: "ワンダーウェルト"
     },
     en: {}
@@ -676,8 +718,19 @@ class keyword_selection_class {
     this.dom.input.addEventListener("blur", event => {
       this.app.link_list.update()
     })
+    let keyword_buttons = config.example_keywords.map(keyword => {
+      let value = i18n.translations.jp[keyword]
+      let button = crel("span", {"class": "link-button"}, i18n.translate(keyword))
+      button.addEventListener("click", event => {
+        this.dom.input.value = value
+        this.app.link_list.update()
+      })
+      return button
+    })
+    this.dom.examples = crel("div", {"class": "example_keywords hlist"}, keyword_buttons)
     let section = helper.make_section("keyword_selection", i18n.translate("keywords"))
     section.appendChild(this.dom.input)
+    section.appendChild(this.dom.examples)
     this.dom.container = section
   }
   constructor(app) {
@@ -730,7 +783,7 @@ class link_list_class {
       [brand, category, keywords] = shop.make_label(brand, category, keywords)
     }
     let label = [i18n.translate(shop_key)]
-    if (brand && 1 < Object.keys(shop.brands).length) label.push(i18n.translate(brand))
+    if (brand && 1 < Object.keys(shop.brands).length && "any" != brand) label.push(i18n.translate(brand))
     if (category && shop.categories && 1 < Object.keys(shop.categories).length) label.push(i18n.translate(category))
     if (keywords) label.push(keywords)
     return label.filter(a => a).join(" - ")
@@ -739,9 +792,16 @@ class link_list_class {
     let links = Object.keys(config.shops).map(shop_key => {
       let shop = config.shops[shop_key]
       let links = brands.map(brand => {
-        if (!shop.brands || undefined == shop.brands[brand]) return
-        let shop_category = category
         let shop_keywords = keywords
+        if (!shop.brands || undefined == shop.brands[brand]) {
+          if (shop.other_brand_as_keyword) {
+            let brand_keyword = brand.replace(/_/g, " ")
+            shop_keywords = shop_keywords ? shop_keywords + " " + brand_keyword : brand_keyword
+          } else {
+            return
+          }
+        }
+        let shop_category = category
         if (category && !(shop.categories && (shop.categories[category] || (shop.category_alias && shop.categories[shop.category_alias[category]])))) {
           shop_keywords = helper.keywords_add_category(keywords, category)
           shop_category = ""
@@ -803,6 +863,7 @@ class app_class {
   }
   constructor() {
     this.set_language()
+    config.categories = config.categories.sort((a, b) => i18n.translate(a).localeCompare(i18n.translate(b)))
     this.category_selection = new category_selection_class(this)
     this.dom.container.appendChild(this.category_selection.dom.container)
     this.keyword_selection = new keyword_selection_class(this)

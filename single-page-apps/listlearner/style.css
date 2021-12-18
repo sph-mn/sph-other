@@ -1,5 +1,5 @@
 button {
-    font-size: 24px;
+    font-size: 20px;
 }
 body {
     background-color: #000;
@@ -26,14 +26,29 @@ body {
 .link-button:hover {
     text-decoration: underline;
 }
-#file_content .hidden {
+#top_bar > .right {
+    float: right;
+    display: inline-block;
+}
+#top_bar > .left {
+    float: left;
+    display: inline-block;
+}
+#top_bar > * {
+    display: inline-block;
+}
+#top_bar > :not(:first) {
+    margin-left: 10px;
+}
+.hidden,
+#top_bar > .hidden,
+#top_bar > .hidden {
     display: none;
 }
-#about_link {
-    float: right;
-    margin-right: 1rem;
-}
 #about {
-    text-align: center;
-    white-space: pre;
+  margin: 10px;
+}
+.active {
+  text-decoration: none;
+  opacity: 0.5;
 }

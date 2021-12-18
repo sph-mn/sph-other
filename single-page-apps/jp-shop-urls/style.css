@@ -8,6 +8,9 @@ section > .label ~ * {
 #keyword_selection .reset {
     margin-left: 0.25rem;
 }
+#keyword_selection .example_keywords {
+    display: inline-block;
+}
 .vlist {
     display: inline-block;
 }
