@@ -157,7 +157,7 @@ const app = {
     list.set_content(JSON.parse(content))
   },
   download_file: () => {
-    const dsv = Papa.unparse(list.get_content())
+    const dsv = Papa.unparse(list.get_content(), app.csv_config)
     app.download(app.current_file_name, dsv)
   },
   upload_file: file => {
