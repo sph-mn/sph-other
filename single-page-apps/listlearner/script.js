@@ -133,7 +133,8 @@ const app = {
     select_file: document.getElementById("select_file"),
     save_file: document.getElementById("save_file"),
     open_file: document.getElementById("open_file"),
-    download_file: document.getElementById("download_file")
+    download_file: document.getElementById("download_file"),
+    font_buttons: document.querySelectorAll("#font-buttons > *")
   },
   csv_config: {
     delimiter: " ",
@@ -148,12 +149,15 @@ const app = {
   save_file: data => {
     localStorage.setItem("file_name", app.current_file_name)
     localStorage.setItem("file_content", JSON.stringify(data))
+    localStorage.setItem("font_size", list.dom.content.style.fontSize)
   },
   open_file: () => {
     content = localStorage.getItem("file_content")
     name = localStorage.getItem("file_name")
+    font_size = localStorage.getItem("font_size")
     if (!content || !name) return
     app.current_file_name = name
+    list.dom.content.style.fontSize = font_size
     list.set_content(JSON.parse(content))
   },
   download_file: () => {
@@ -188,6 +192,11 @@ const app = {
     })
     app.dom.open_file.addEventListener("click", event => {
       document.getElementById("select_file").click()
+    })
+    app.dom.font_buttons.forEach((a) => {
+      a.addEventListener("click", event => {
+        list.dom.content.style.fontSize = a.innerHTML
+      })
     })
     list.init()
     app.open_file()

@@ -27,12 +27,13 @@
           text-decoration: none;
           color: #aaa;
       }
-      button {
-    font-size: 20px;
+      html {
+    font-size: 24px;
 }
 body {
     background-color: #000;
     color: #aaa;
+    margin: 0;
 }
 #top_bar {
     position: fixed;
@@ -42,8 +43,7 @@ body {
     border-bottom: 1px solid #888;
 }
 #file_content {
-    margin-top: 30px;
-    font-size: 175%;
+    margin-top: 1.5rem;
 }
 #file_content .selected {
     background-color: #aaa;
@@ -55,15 +55,16 @@ body {
 .link-button:hover {
     text-decoration: underline;
 }
+#top_bar .link-button {
+    font-size: 25%;
+    display: inline-block;
+}
 #top_bar > .right {
     float: right;
     display: inline-block;
 }
 #top_bar > .left {
     float: left;
-    display: inline-block;
-}
-#top_bar > * {
     display: inline-block;
 }
 #top_bar > :not(:first) {
@@ -90,15 +91,25 @@ body {
   <div id="open_file" class="link-button">open</div>
   <div id="save_file" class="link-button">save</div>
   <div id="download_file" class="link-button">download</div>
-  <a id="dictionary_link" href="http://sph.mn/other/kanji-viewer.html" target="_blank">dictionary</a>
   <div id="about_link" class="link-button">about</div>
   <div id="about" class="hidden">
-    open space delimited csv files and hide all columns except the first.
-    show line content with the space key.
-    navigate between lines with the up and down arrow keys.
-    move lines up or down with ctrl+up or ctrl+down.
-    files are saved in the browser cache for next use.
-    files can be downloaded.
+      <ul>
+          <li>opens space delimited dsv files and shows the first column</li>
+          <li><i>save</i> keeps the file open between browser sessions</li>
+      </ul>
+      keybindings:
+      <ul>
+          <li>space: show/hide other columns</li>
+          <li>up/down arrows: change current line</li>
+          <li>ctrl+up: move line upwards</li>
+          <li>ctrl+down: move line downwards</li>
+      </ul>
+  </div>
+  <div id="font-buttons" class="right">
+      <div class="link-button">100%</div>
+      <div class="link-button">200%</div>
+      <div class="link-button">300%</div>
+      <div class="link-button">400%</div>
   </div>
 </div>
 <div id="file_content"></div>
@@ -239,7 +250,8 @@ const app = {
     select_file: document.getElementById("select_file"),
     save_file: document.getElementById("save_file"),
     open_file: document.getElementById("open_file"),
-    download_file: document.getElementById("download_file")
+    download_file: document.getElementById("download_file"),
+    font_buttons: document.querySelectorAll("#font-buttons > *")
   },
   csv_config: {
     delimiter: " ",
@@ -254,12 +266,15 @@ const app = {
   save_file: data => {
     localStorage.setItem("file_name", app.current_file_name)
     localStorage.setItem("file_content", JSON.stringify(data))
+    localStorage.setItem("font_size", list.dom.content.style.fontSize)
   },
   open_file: () => {
     content = localStorage.getItem("file_content")
     name = localStorage.getItem("file_name")
+    font_size = localStorage.getItem("font_size")
     if (!content || !name) return
     app.current_file_name = name
+    list.dom.content.style.fontSize = font_size
     list.set_content(JSON.parse(content))
   },
   download_file: () => {
@@ -294,6 +309,11 @@ const app = {
     })
     app.dom.open_file.addEventListener("click", event => {
       document.getElementById("select_file").click()
+    })
+    app.dom.font_buttons.forEach((a) => {
+      a.addEventListener("click", event => {
+        list.dom.content.style.fontSize = a.innerHTML
+      })
     })
     list.init()
     app.open_file()

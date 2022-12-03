@@ -1,9 +1,10 @@
-button {
-    font-size: 20px;
+html {
+    font-size: 24px;
 }
 body {
     background-color: #000;
     color: #aaa;
+    margin: 0;
 }
 #top_bar {
     position: fixed;
@@ -13,8 +14,7 @@ body {
     border-bottom: 1px solid #888;
 }
 #file_content {
-    margin-top: 30px;
-    font-size: 175%;
+    margin-top: 1.5rem;
 }
 #file_content .selected {
     background-color: #aaa;
@@ -26,15 +26,16 @@ body {
 .link-button:hover {
     text-decoration: underline;
 }
+#top_bar .link-button {
+    font-size: 25%;
+    display: inline-block;
+}
 #top_bar > .right {
     float: right;
     display: inline-block;
 }
 #top_bar > .left {
     float: left;
-    display: inline-block;
-}
-#top_bar > * {
     display: inline-block;
 }
 #top_bar > :not(:first) {

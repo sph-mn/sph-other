@@ -3,15 +3,25 @@
   <div id="open_file" class="link-button">open</div>
   <div id="save_file" class="link-button">save</div>
   <div id="download_file" class="link-button">download</div>
-  <a id="dictionary_link" href="http://sph.mn/other/kanji-viewer.html" target="_blank">dictionary</a>
   <div id="about_link" class="link-button">about</div>
   <div id="about" class="hidden">
-    open space delimited csv files and hide all columns except the first.
-    show line content with the space key.
-    navigate between lines with the up and down arrow keys.
-    move lines up or down with ctrl+up or ctrl+down.
-    files are saved in the browser cache for next use.
-    files can be downloaded.
+      <ul>
+          <li>opens space delimited dsv files and shows the first column</li>
+          <li><i>save</i> keeps the file open between browser sessions</li>
+      </ul>
+      keybindings:
+      <ul>
+          <li>space: show/hide other columns</li>
+          <li>up/down arrows: change current line</li>
+          <li>ctrl+up: move line upwards</li>
+          <li>ctrl+down: move line downwards</li>
+      </ul>
+  </div>
+  <div id="font-buttons" class="right">
+      <div class="link-button">100%</div>
+      <div class="link-button">200%</div>
+      <div class="link-button">300%</div>
+      <div class="link-button">400%</div>
   </div>
 </div>
 <div id="file_content"></div>
