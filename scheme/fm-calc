@@ -1,0 +1,56 @@
+#!/usr/bin/guile
+!#
+
+(use-modules (sph) (sph cli)
+  ((sph alist) #:select (alist-bind)) ((sph list) #:select (map-integers map-apply)) (sph math))
+
+(define description "calculate frequency modulation properties")
+
+(define (fm-modulation-index modulator-amplitude modulator-frequency)
+  (/ modulator-amplitude modulator-frequency))
+
+(define (fm-partial-frq-negative n carrier-frequency modulator-frequency)
+  (- carrier-frequency (* n modulator-frequency)))
+
+(define (fm-partial-frq-positive n carrier-frequency modulator-frequency)
+  (+ carrier-frequency (* n modulator-frequency)))
+
+(define (fm-partial-amp n carrier-frequency modulator-amplitude modulator-frequency)
+  (bessel n (fm-modulation-index modulator-amplitude modulator-frequency) 30))
+
+(define (fm-spectrum cfrq mfrq mamp)
+  (let*
+    ( (count 30)
+      (amps
+        (filter identity
+          (map-integers count
+            (l (n)
+              (let (amp (fm-partial-amp n cfrq mamp mfrq)) (if (> amp 1/1000) (list n amp) #f)))))))
+    (if (null? amps) null
+      (append
+        (reverse
+          (map-apply (l (n amp) (pair (fm-partial-frq-negative n cfrq mfrq) amp))
+            (if (= 0 (first (first amps))) (tail amps) amps)))
+        (map-apply (l (n amp) (pair (fm-partial-frq-positive n cfrq mfrq) amp)) amps)))))
+
+(define (fm-calc-display-spectrum spectrum)
+  (for-each (l (a) (simple-format #t "~A ~A\n" (first a) (exact->inexact (tail a)))) spectrum))
+
+(define (fm-calc-display-all cfrq mfrq mamp)
+  (let* ((spectrum (fm-spectrum cfrq mfrq mamp)) (frqs (map first spectrum)))
+    (simple-format #t "carrier: ~A\nmodulator: ~A\nmodulator amp: ~A\nindex: ~A\nbandwidth: ~A\n\n"
+      cfrq mfrq
+      mamp (exact->inexact (fm-modulation-index mamp mfrq)) (- (apply max frqs) (apply min frqs)))
+    (fm-calc-display-spectrum spectrum)))
+
+(define (fm-calc)
+  (let
+    (cli
+      (cli-create #:options (q (((cfrq mfrq mamp) #:required? #t) (brief #:names #\s)))
+        #:description description))
+    (alist-bind (cli) (cfrq mfrq mamp brief)
+      (let ((cfrq (string->number cfrq)) (mfrq (string->number mfrq)) (mamp (string->number mamp)))
+        (if brief (fm-calc-display-spectrum (fm-spectrum cfrq mfrq mamp))
+          (fm-calc-display-all cfrq mfrq mamp))))))
+
+(fm-calc)
