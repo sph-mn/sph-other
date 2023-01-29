@@ -7,7 +7,7 @@
 (define description "calculate frequency modulation properties")
 
 (define (fm-modulation-index modulator-amplitude modulator-frequency)
-  (/ modulator-amplitude modulator-frequency))
+  (/ (* modulator-amplitude modulator-frequency) modulator-frequency))
 
 (define (fm-partial-frq-negative n carrier-frequency modulator-frequency)
   (- carrier-frequency (* n modulator-frequency)))
