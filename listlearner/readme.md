@@ -46,12 +46,7 @@ there can be more than two columns. the first column is the question.
 # tips
 one way to use listlearner is to go through the list and move difficult items to the top. only well known items are moved to the bottom. this way, over time, a personalised list sorted by difficulty emerges.
 
-# development
-## requirements and setup
-* install [node.js](https://nodejs.org/en/) if not already installed
-* on a command-line, change into the application directory and execute ``npm install`` to install the required node modules
-
-# licence
+# license
 gpl3+
 
 # developer information
