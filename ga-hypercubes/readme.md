@@ -1,12 +1,12 @@
 # rotating hypercubes on html canvas using geometric algebra rotors
 
 # demo
-[here](http://files.sph.mn/u/software/sourcecode/sph-other/ga-hypercubes/)
+[here](http://sph.mn/files/u/software/sourcecode/sph-other/ga-hypercubes/)
 
 # info
 * the compiled javascript file is compiled/main.js
 * the source file is main.coffee (using [coffeescript](http://coffeescript.org/), "npm install coffeescript")
-* deployment: make the project directory accessible per http using a web server then open index.html in a browser and an animation should appear
+* deployment: make the project directory accessible via http using a web server then open index.html in a browser and an animation should appear
 * license: public domain
 
 uses
