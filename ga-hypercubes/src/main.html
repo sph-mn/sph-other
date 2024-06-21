@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="initial-scale=1"/>
+    <title>cube</title>
+    <script src="foreign/versor.js"></script>
+    <script src="foreign/crel.js"></script>
+    <script src="compiled/helper.js"></script>
+    <script src="compiled/render.js"></script>
+    <script src="compiled/ui.js"></script>
+    <style>
+     canvas{margin-top: 4px; width: 1000px; height: 800px}
+     html{font-size: 16px; line-height: 20px; font-family: monospace}
+     h1,h2,h3,h4,h5,h6{font-weight: bold}
+     label > input{margin-left: 8px;width:5rem}
+    </style>
+  </head>
+  <body style="background-color:#fff">
+    <h1>rotating n-cube projections</h1>
+    <div id="controls"></div>
+    <canvas></canvas>
+    <div>
+      <a target="_blank" href="http://sph.mn">by sph.mn</a>
+      <a target="_blank" href="https://github.com/sph-mn/sph-other/tree/master/ga-hypercubes">source</a>
+    </div>
+    <script>
+      new ui_class(render_rotating_cube)
+    </script>
+  </body>
+</html>

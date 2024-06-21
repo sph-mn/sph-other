@@ -6,7 +6,7 @@
 # info
 * the compiled javascript file is compiled/main.js
 * the source file is main.coffee (using [coffeescript](http://coffeescript.org/), "npm install coffeescript")
-* deployment: make the project directory accessible via http using a web server then open index.html in a browser and an animation should appear
+* deployment: make the project directory accessible via http using a web server then open main.html in a browser and an animation should appear
 * license: public domain
 
 uses

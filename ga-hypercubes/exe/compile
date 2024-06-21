@@ -1,3 +1,3 @@
 #!/bin/sh
 
-coffee --compile --output compiled "$@" main.coffee
+coffee --compile --bare --output src/compiled "$@" src/*.coffee
