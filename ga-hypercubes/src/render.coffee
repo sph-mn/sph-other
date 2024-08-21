@@ -1,8 +1,122 @@
+unless window?
+  fs = require "fs"
+  vm = require "vm"
+  script = fs.readFileSync "./src/foreign/versor.js", 'utf8'
+  context = {}
+  vm.runInNewContext script, context
+  versor = context.versor
+
 random_color = -> [Math.random(), Math.random(), Math.random()]
-color_to_string = (a) -> "rgb(#{a[0]}, #{a[1]}, #{a[2]})"
-available_colors = [0...12].map (a) -> random_color()
 adjust_color_brightness = (a, factor) -> a.map (a) -> Math.min 255, Math.max(0, a * factor)
 array_sum = (a) -> a.reduce ((a, b) -> a + b), 0
+available_colors = [0...12].map (a) -> random_color()
+bits_to_array = (a, n) -> [0...n].map (b, i) -> if 0 == (a >> i & 1) then -1 else 1
+bits_to_float32_array = (a, n) -> [0...n].map (b, i) -> if 0 == (a >> i & 1) then -1 else 1
+color_to_string = (a) -> "rgb(#{a[0]}, #{a[1]}, #{a[2]})"
+edge_equal = (a, b) -> (a[0] == b[0] && a[1] == b[1]) || (a[0] == b[1] && a[1] == b[0])
+false_if_nan = (a) -> if isNaN a then false else a
+line_midpoint = (a, b) -> [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
+vertex_distance = (a) -> Math.sqrt a.map (a) -> a * a
+
+binomial = (n, k) ->
+  # binomial coefficient (n choose k)
+  if k == 0 or k == n then 1
+  else (n * binomial(n - 1, k - 1)) / k
+
+any = (a, f) ->
+  # array {any -> any} -> any
+  # like Array.some but returns the truthy result
+  for b in a
+    c = f b
+    return c if c
+  false
+
+array_swap = (a, i, j) ->
+  # array integer integer -> unspecified
+  b = a[i]
+  a[i] = a[j]
+  a[j] = b
+
+array_map_leafs = (a, f) ->
+  a.map (a) ->
+    if Array.isArray a then array_map_leafs a, f
+    else f a
+
+array_map_depth = (a, depth, f) ->
+  a.map (a) ->
+    if depth then array_map_depth a, depth - 1, f
+    else f a
+
+intersection = (a, b, min, includes) ->
+  # array array integer {any any -> boolean} -> array
+  # return the shared elements if at least "min" number of elements are shared.
+  # "includes" is a custom comparison function.
+  unless includes
+    includes = (a, b) -> a.includes b
+  included = []
+  for c in a
+    continue unless includes b, c
+    included.push c
+    return included if 1 == min
+    min -= 1
+  false
+
+perspective_project = (plane_width, plane_height, vertex_distance) ->
+  effective_distance = a.slice(3).reduce ((sum, a) -> sum - a), vertex_distance
+  scale = vertex_distance / effective_distance
+  x = x * scale
+  y = y * scale
+  z = z * scale
+  [x, y, z]
+
+sort_by_predicate = (a, predicate) ->
+  # array {any any -> 0/1/2} -> array
+  # 0: no-match, 1: acceptable, 2: optimal
+  sorted = [a[0]]
+  a = a.slice 1
+  while a.length > 0
+    previous = sorted[sorted.length - 1]
+    next_index = 0
+    adjacent = null
+    for b, i in a
+      match_result = predicate previous, b
+      if match_result
+        next_index = i
+        break if 2 == match_result
+    sorted.push a[next_index]
+    a.splice next_index, 1
+  sorted
+
+get_bit_combinations = (n, k) ->
+  # generate all k-combinations of a set of size n as binary bitvectors.
+  # algorithm: gospers hack
+  result = []
+  a = (1 << k) - 1
+  while a < (1 << n)
+    result.push a
+    b = a & -a
+    c = a + b
+    a = (((c ^ a) >> 2) / b) | c
+  result
+
+gl_create_shader = (gl, type, source) ->
+  a = gl.createShader gl[type]
+  gl.shaderSource a, source
+  gl.compileShader a
+  unless gl.getShaderParameter a, gl.COMPILE_STATUS
+    console.error gl.getShaderInfoLog a
+    gl.deleteShader a
+  a
+
+gl_create_program = (gl, vertex_shader, fragment_shader) ->
+  a = gl.createProgram()
+  gl.attachShader a, vertex_shader
+  gl.attachShader a, fragment_shader
+  gl.linkProgram a
+  unless gl.getProgramParameter a, gl.LINK_STATUS
+     console.error gl.getProgramInfoLog program
+     gl.deleteProgram a
+  a
 
 any_square = (cells, f) ->
   # array {array -> any} -> any
@@ -36,9 +150,9 @@ group_n_cells = (vertices, indices, n, k, cell_length) ->
     cell_indices = cell_indices.concat new_cell_indices
   cell_indices
 
-get_cell_indices = (vertices, n) ->
+get_cells = (vertices, n) ->
   # integer -> array
-  # get edges grouped by nested cells
+  # get indices of edges grouped by nested cells.
   subcells = (indices, k) ->
     return indices unless k < n
     indices = group_n_cells vertices, indices, n, k, 2 ** (n - k)
@@ -88,43 +202,44 @@ gl_initialize = (canvas) ->
   program_wireframe = gl_create_program gl, vertex_shader, fragment_shader_wireframe
   program_solid = gl_create_program gl, vertex_shader, fragment_shader_solid
   # link position variable to array_buffer
-  position_attribute_location = gl.getAttribLocation program_wireframe, 'position'
+  position_attribute_location = gl.getAttribLocation program_wireframe, "position"
   gl.enableVertexAttribArray position_attribute_location
   gl.vertexAttribPointer position_attribute_location, 3, gl.FLOAT, false, 0, 0
   gl.enable gl.CULL_FACE
   gl
 
-get_projector = (space, options) ->
+get_projector = (space, projection_distance, projection_angle) ->
   # perspective projection
   # r1 = e ** ((angle / 2) * n * eo) = cos(angle / 2) + sin(angle / 2) * n * eo
   # r2 = e ** ((1 / (2 * d)) * n * eo) = 1 + ep 1 / (2 * d) * n, eo
   rotors = []
   ## reflection rotor r1
-  angle = options.projection_angle
+  angle = projection_angle
   normal = space.e1 1
   eo = space.eo 1
   scalar_part = space.s Math.cos angle / 2
   vector_part = normal.gp(eo).gp space.s Math.sin angle / 2
   rotors.push scalar_part.add vector_part
   ## inversion rotor r2
-  d = options.projection_distance
+  d = projection_distance
   scalar_part = space.s 1
   vector_part = normal.op space.s(1 / (2 * d)).gp(normal), eo
   rotors.push scalar_part.add vector_part
   (a) -> rotors.reduce ((a, b) -> a.sp b), a
 
-get_rotator = (space, options) ->
-  # object object -> {versor_object:vertex -> versor_object:vertex}
+get_rotator = (space, n, rotation_dimensions, rotation_speed) ->
+  # object integer integer rational -> {versor_object:vertex -> versor_object:vertex}
   # rotation
   # R = cos(angle / 2) + B * sin(angle / 2)
-  bivector_magnitude = Math.sin options.rotation_speed / 2
-  rotor_data = Array options.dimensions + 1
-  rotor_data[0] = Math.cos options.rotation_speed / 2
-  rotors = for a, i in options.rotate_dimensions
+  bivector_magnitude = Math.sin rotation_speed / 2
+  rotor_data = Array n + 1
+  rotor_data[0] = Math.cos rotation_speed / 2
+  rotors = for a, i in rotation_dimensions
     continue unless a
     rotor_data = rotor_data.fill 0, 1
     rotor_data[i + 1] = bivector_magnitude
     space.new "rotor", rotor_data
+  (a) -> rotators.reduce ((a, r) -> a.sp(r)), a
 
 generate_axis_combinations = (dimension) ->
   combinations = []
@@ -165,22 +280,53 @@ triangulate_squares = (indices, n) ->
   array_map_depth indices, n - 3, (a) ->
     [[a[0][0], a[0][1], a[2][1]], [a[1][0], a[1][1], a[2][1]]]
 
-indices_sorter = (space, n, vertices) ->
-  pss = space.pseudoscalar 1
-  (indices) ->
-    # sort edges counter clockwise.
-    # assumes that edges are already sorted cyclically
-    array_map_depth indices, n - 2, (a) ->
-      [p3, p2, p1] = a.map (a) -> vertices[a]
-      #a = [a[2], a[0], a[1]]
-      #points = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
-      #points = [[0, 1, 0], [1, 0, 0], [0, 0, 1]]
-      #[p1, p2, p3] = points.map (a) -> space.point_from_cartesian a
-      normal = p2.sub(p1).op(p3.sub(p1))
-      console.log normal.toArray()
-      orientation = normal.ip(space.e5(1))
-      #console.log normal, orientation
-      if 0 < orientation then a else [a[0], a[2], a[1]]
+versor_object_type_definition = (space, a) ->
+  type = space.types[a.type]
+  types = Object.values space.types
+  bases = type.bases.map (a) ->
+    (types.find (b) -> 1 == b.bases.length && a == b.bases[0]).name
+  {name: a.type, bases: bases}
+
+sort_vertices = (space, n, vertices, cells) ->
+  # sort edges counter clockwise.
+  # assumes that edges are already sorted cyclically.
+  i = space.pseudoscalar 1
+  p_ref = space.point_from_cartesian [0, 0, 2]
+  array_map_depth cells, n - 2, (a) ->
+    console.log "--"
+    [p1, p2, p3] = a.map (a) -> vertices[a]
+    b = p2.sub(p1).op(p3.sub(p1))
+    v = p1.sub(p_ref)
+    o = b.ip(v)
+    console.log(space.point_to_cartesian(p1))
+    console.log(space.point_to_cartesian(p2))
+    console.log(space.point_to_cartesian(p3))
+
+get_cube = (options) ->
+  n = options.dimensions
+  space = create_versor_space n
+  rotator = get_rotator space, n, options.rotation_dimensions.slice(0, n), options.rotation_speed
+  projector = get_projector space, options.projection_distance, options.projection_angle
+  bit_vertices = [0...2 ** n]
+  vertices = bit_vertices.map (a) -> space.point_from_cartesian bits_to_array(a, n)
+  cells = get_cells bit_vertices, n
+  cells = triangulate_squares cells, n
+  cells = sort_vertices space, n, vertices, cells
+  return 0
+  {space, rotator, projector, vertices, triangles}
+
+node_run = () ->
+  options = {
+    dimensions: 3
+    rotation_dimensions: [1, 0, 1, 1]
+    rotation_speed: 0.2
+    projection_distance: 3
+    projection_angle: Math.PI / 4
+  }
+  cube = get_cube options
+  console.log cube
+
+node_run()
 
 render_rotating_cube = (options) ->
   # object -> interval
@@ -190,19 +336,10 @@ render_rotating_cube = (options) ->
   # - transformations: versor.js vectors
   # - vertex sorting: integer arrays
   # - webgl: float32arrays
-  gl = gl_initialize options.canvas
   n = options.dimensions
-  space = create_versor_space n
-  rotator = get_rotator space, options
-  projector = get_projector space, options
-  vertices = [0...2 ** n]
-  indices = get_cell_indices vertices, n
-  vertices = vertices.map (a) -> space.point_from_cartesian bits_to_array(a, n)
-  indices = triangulate_squares indices, n
-  sorter = indices_sorter space, n, vertices
-  sorter indices
+  cube = get_cube n
   return
-
+  gl = gl_initialize options.canvas
   gl.bufferData gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW
   final_vertices = new Float32Array vertices.length
   draw = () ->
