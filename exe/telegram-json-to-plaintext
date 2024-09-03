@@ -1,0 +1,24 @@
+#!/usr/bin/coffee
+
+fs = require "fs"
+process = require "process"
+
+get_data = (path) ->
+  data = JSON.parse fs.readFileSync path, "utf-8"
+  data = data.messages.map (a) ->
+    if Array.isArray a.text
+      a.text = a.text.map (a) ->
+        if typeof a == 'object'
+          if "bold" == a.type then "*#{a.text}*"
+          else a.text
+        else a
+      a.text = a.text.join ""
+    "#{a.date} #{a.from}\n#{a.text}"
+  data.join "\n\n"
+
+telegram_json_to_plaintext = () ->
+  text = get_data process.argv[2]
+  destination = process.argv[3]
+  fs.writeFileSync destination, text
+
+telegram_json_to_plaintext()
