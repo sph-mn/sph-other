@@ -1,7 +1,6 @@
-# rotating hypercubes on html canvas using geometric algebra rotors
+# rotating hypercube projections using conformal geometric algebra on a webgl canvas
 
-# demo
-[here](http://sph.mn/files/u/software/sourcecode/sph-other/ga-hypercubes/)
+[demo](http://sph.mn/files/u/software/sourcecode/sph-other/ga-hypercubes/)
 
 # info
 * the compiled javascript file is compiled/main.js

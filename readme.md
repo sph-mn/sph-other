@@ -1,8 +1,16 @@
+# hypercube projections
+[cga-hypercubes](cga-hypercubes/) contains code for hypercube rotation animations in the browser and has a dedicated readme.
+
 # emacs
-* color-theme-sph: a color theme in three versions: dark, light, monochrome
-* sph-scheme-mode: a simpler, faster, standalone emacs mode for editing scheme with regular indentation where indent depth corresponds to nesting depth
+## color-theme-sph
+a color theme in three versions: dark, light, monochrome. been happy with it for the last 10, 15 years?
+
+![color theme dark](emacs/color-theme/dark.png?raw=true)
+![color theme monochrome](emacs/color-theme/monochrome.png?raw=true)
 
 ## sph-scheme-mode
+a simpler, faster, standalone emacs mode for editing scheme with regular indentation where indent depth corresponds to nesting depth.
+
 * syntax highlighting and indentation
 * regular indentation - every nesting step is represented by the same width
 * highlighting of identifiers in definitions (with different colors for variable, procedure and syntax definitions)
@@ -27,13 +35,3 @@ add the following to your emacs config file
 when the file has been loaded, activate with M-x
 
     sph-scheme-mode
-
-## color theme preview:
-![color theme dark](emacs/color-theme/dark.png?raw=true)
-![color theme monochrome](emacs/color-theme/monochrome.png?raw=true)
-
-# scheme/fun
-guile modules that depend on [sph-lib](https://github.com/sph-mn/sph-lib)
-
-# hypercube projections
-ga-hypercubes contains code for hypercube rotation animations in the browser and another readme
