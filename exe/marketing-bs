@@ -1,5 +1,0 @@
-#!/usr/bin/guile
-!#
-
-(import (sph) (sph fun marketing-bs))
-(display-marketing-bs 10)

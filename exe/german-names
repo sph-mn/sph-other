@@ -1,6 +1,0 @@
-#!/usr/bin/guile
-!#
-
-(import (sph) (sph fun german-names))
-
-(display-german-names 20)
