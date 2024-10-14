@@ -1,27 +1,14 @@
+# allow to be run in the browser and node.js
 unless window?
   fs = require "fs"
   vm = require "vm"
-  script = fs.readFileSync "./src/foreign/versor.js", 'utf8'
+  script = fs.readFileSync "./src/foreign/versor.js", "utf8"
   context = {}
   vm.runInNewContext script, context
   versor = context.versor
 
-random_color = -> [Math.random(), Math.random(), Math.random()]
-adjust_color_brightness = (a, factor) -> a.map (a) -> Math.min 255, Math.max(0, a * factor)
 array_sum = (a) -> a.reduce ((a, b) -> a + b), 0
-available_colors = [0...12].map (a) -> random_color()
 bits_to_array = (a, n) -> [0...n].map (b, i) -> if 0 == (a >> i & 1) then -1 else 1
-bits_to_float32_array = (a, n) -> [0...n].map (b, i) -> if 0 == (a >> i & 1) then -1 else 1
-color_to_string = (a) -> "rgb(#{a[0]}, #{a[1]}, #{a[2]})"
-edge_equal = (a, b) -> (a[0] == b[0] && a[1] == b[1]) || (a[0] == b[1] && a[1] == b[0])
-false_if_nan = (a) -> if isNaN a then false else a
-line_midpoint = (a, b) -> [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]
-vertex_distance = (a) -> Math.sqrt a.map (a) -> a * a
-
-binomial = (n, k) ->
-  # binomial coefficient (n choose k)
-  if k == 0 or k == n then 1
-  else (n * binomial(n - 1, k - 1)) / k
 
 any = (a, f) ->
   # array {any -> any} -> any
@@ -37,37 +24,10 @@ array_swap = (a, i, j) ->
   a[i] = a[j]
   a[j] = b
 
-array_map_leafs = (a, f) ->
-  a.map (a) ->
-    if Array.isArray a then array_map_leafs a, f
-    else f a
-
 array_map_depth = (a, depth, f) ->
   a.map (a) ->
     if depth then array_map_depth a, depth - 1, f
     else f a
-
-intersection = (a, b, min, includes) ->
-  # array array integer {any any -> boolean} -> array
-  # return the shared elements if at least "min" number of elements are shared.
-  # "includes" is a custom comparison function.
-  unless includes
-    includes = (a, b) -> a.includes b
-  included = []
-  for c in a
-    continue unless includes b, c
-    included.push c
-    return included if 1 == min
-    min -= 1
-  false
-
-perspective_project = (plane_width, plane_height, vertex_distance) ->
-  effective_distance = a.slice(3).reduce ((sum, a) -> sum - a), vertex_distance
-  scale = vertex_distance / effective_distance
-  x = x * scale
-  y = y * scale
-  z = z * scale
-  [x, y, z]
 
 sort_by_predicate = (a, predicate) ->
   # array {any any -> 0/1/2} -> array
@@ -98,25 +58,6 @@ get_bit_combinations = (n, k) ->
     c = a + b
     a = (((c ^ a) >> 2) / b) | c
   result
-
-gl_create_shader = (gl, type, source) ->
-  a = gl.createShader gl[type]
-  gl.shaderSource a, source
-  gl.compileShader a
-  unless gl.getShaderParameter a, gl.COMPILE_STATUS
-    console.error gl.getShaderInfoLog a
-    gl.deleteShader a
-  a
-
-gl_create_program = (gl, vertex_shader, fragment_shader) ->
-  a = gl.createProgram()
-  gl.attachShader a, vertex_shader
-  gl.attachShader a, fragment_shader
-  gl.linkProgram a
-  unless gl.getProgramParameter a, gl.LINK_STATUS
-     console.error gl.getProgramInfoLog program
-     gl.deleteProgram a
-  a
 
 any_square = (cells, f) ->
   # array {array -> any} -> any
@@ -186,6 +127,25 @@ void main() {
   fragment_color = vec4(1.0, 1.0, 1.0, 1.0);
 }
 """
+
+gl_create_shader = (gl, type, source) ->
+  a = gl.createShader gl[type]
+  gl.shaderSource a, source
+  gl.compileShader a
+  unless gl.getShaderParameter a, gl.COMPILE_STATUS
+    console.error gl.getShaderInfoLog a
+    gl.deleteShader a
+  a
+
+gl_create_program = (gl, vertex_shader, fragment_shader) ->
+  a = gl.createProgram()
+  gl.attachShader a, vertex_shader
+  gl.attachShader a, fragment_shader
+  gl.linkProgram a
+  unless gl.getProgramParameter a, gl.LINK_STATUS
+     console.error gl.getProgramInfoLog program
+     gl.deleteProgram a
+  a
 
 gl_initialize = (canvas) ->
   gl = canvas.getContext "webgl2"
@@ -280,13 +240,6 @@ triangulate_squares = (indices, n) ->
   array_map_depth indices, n - 3, (a) ->
     [[a[0][0], a[0][1], a[2][1]], [a[1][0], a[1][1], a[2][1]]]
 
-versor_object_type_definition = (space, a) ->
-  type = space.types[a.type]
-  types = Object.values space.types
-  bases = type.bases.map (a) ->
-    (types.find (b) -> 1 == b.bases.length && a == b.bases[0]).name
-  {name: a.type, bases: bases}
-
 sort_vertices = (space, n, vertices, cells) ->
   # sort edges counter clockwise.
   # assumes that edges are already sorted cyclically.
@@ -298,9 +251,9 @@ sort_vertices = (space, n, vertices, cells) ->
     b = p2.sub(p1).op(p3.sub(p1))
     v = p1.sub(p_ref)
     o = b.ip(v)
-    console.log(space.point_to_cartesian(p1))
-    console.log(space.point_to_cartesian(p2))
-    console.log(space.point_to_cartesian(p3))
+    console.log space.point_to_cartesian(p1)
+    console.log space.point_to_cartesian(p2)
+    console.log space.point_to_cartesian(p3)
 
 get_cube = (options) ->
   n = options.dimensions
@@ -312,21 +265,7 @@ get_cube = (options) ->
   cells = get_cells bit_vertices, n
   cells = triangulate_squares cells, n
   cells = sort_vertices space, n, vertices, cells
-  return 0
-  {space, rotator, projector, vertices, triangles}
-
-node_run = () ->
-  options = {
-    dimensions: 3
-    rotation_dimensions: [1, 0, 1, 1]
-    rotation_speed: 0.2
-    projection_distance: 3
-    projection_angle: Math.PI / 4
-  }
-  cube = get_cube options
-  console.log cube
-
-node_run()
+  {space, rotator, projector, vertices}
 
 render_rotating_cube = (options) ->
   # object -> interval
@@ -338,7 +277,6 @@ render_rotating_cube = (options) ->
   # - webgl: float32arrays
   n = options.dimensions
   cube = get_cube n
-  return
   gl = gl_initialize options.canvas
   gl.bufferData gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW
   final_vertices = new Float32Array vertices.length
@@ -356,10 +294,22 @@ render_rotating_cube = (options) ->
   draw()
   options.canvas.addEventListener "click", (event) -> draw()
   previous_time = -options.refresh
-  return
   on_frame = (time) ->
     if options.refresh <= time - previous_time
       previous_time = time
       draw()
     requestAnimationFrame on_frame
   requestAnimationFrame on_frame
+
+node_run = () ->
+  options = {
+    dimensions: 3
+    rotation_dimensions: [1, 0, 1, 1]
+    rotation_speed: 0.2
+    projection_distance: 3
+    projection_angle: Math.PI / 4
+  }
+  cube = get_cube options
+  console.log cube
+
+node_run()
