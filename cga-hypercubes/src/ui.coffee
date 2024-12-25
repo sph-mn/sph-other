@@ -4,7 +4,7 @@ class ui_class
   options:
     dimensions: 3
     # zero elements are not rotated
-    rotate_dimensions: [1, 0, 1, 1]
+    rotation_dimensions: [1, 0, 1, 1]
     # in milliseconds
     refresh: 15000
     # in radians
@@ -18,10 +18,11 @@ class ui_class
   dom: {}
   label: (text, content) -> label = crel "label", text, content
   warning_shown: false
+  false_if_nan: (a) -> if isNaN a then false else a
 
   reset: () =>
     # start rendering with a new configuration
-    @options.dimensions = Math.max 1, (false_if_nan(parseInt(@dom.dimensions.value)) || @options.dimensions)
+    @options.dimensions = Math.max 1, (@false_if_nan(parseInt(@dom.dimensions.value)) || @options.dimensions)
     if 7 < @options.dimensions
       alert "unfortunately, the current maximum number of dimensions 7 because of limitations in a support library"
       @dom.dimensions.value = 7
@@ -30,12 +31,12 @@ class ui_class
       count = 2 ** @options.dimensions
       alert "increasing dimensions can easily overload the browser. now continuing to create " + count + " vertices", "notice"
       @warning_shown = true
-    @options.rotate_dimensions = @dom.rotation_axes.map (a) -> if a.checked then 1 else 0
+    @options.rotation_dimensions = @dom.rotation_axes.map (a) -> if a.checked then 1 else 0
     rotation_axes = document.getElementById "rotation_axes"
     rotation_axes.innerHTML = ""
     @dom.rotation_axes = @rotation_axes_new()
     @dom.rotation_axes.forEach (a) -> rotation_axes.appendChild a
-    @options.rotation_speed = Math.PI * (false_if_nan(parseFloat(@dom.rotation_speed.value)) || @options.rotation_speed)
+    @options.rotation_speed = Math.PI * (@false_if_nan(parseFloat(@dom.rotation_speed.value)) || @options.rotation_speed)
     @options.canvas = document.getElementsByTagName("canvas")[0]
     @cube_interval and clearInterval(@cube_interval)
     @cube_interval = @draw @options
@@ -44,7 +45,7 @@ class ui_class
     # create a new array of checkboxes
     Array(@options.dimensions).fill(0).map (a, index) =>
       a = crel "input", {type: "checkbox", value: index}
-      a.checked = not (@options.rotate_dimensions[index] is 0)
+      a.checked = not (@options.rotation_dimensions[index] is 0)
       a.addEventListener "change", @reset
       a
 

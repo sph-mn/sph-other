@@ -1,11 +1,4 @@
-# allow to be run in the browser and node.js
-unless window?
-  fs = require "fs"
-  vm = require "vm"
-  script = fs.readFileSync "./src/foreign/versor.js", "utf8"
-  context = {}
-  vm.runInNewContext script, context
-  versor = context.versor
+sph_ga = require "./foreign/sph_ga.js" unless window?  # allow it to be run in the browser and node.js
 
 array_sum = (a) -> a.reduce ((a, b) -> a + b), 0
 bits_to_array = (a, n) -> [0...n].map (b, i) -> if 0 == (a >> i & 1) then -1 else 1
@@ -59,13 +52,6 @@ get_bit_combinations = (n, k) ->
     a = (((c ^ a) >> 2) / b) | c
   result
 
-any_square = (cells, f) ->
-  # array {array -> any} -> any
-  # apply Array.find only on 2-cells and return the first truthy result
-  if 4 == cells.length && 2 == cells[0].length && Number.isInteger cells[0][0]
-    f cells
-  else any cells, (a) -> any_square a, f
-
 sort_edges_cyclically = (cells) ->
   # sort edge vertices to form a continuous line
   is_adjacent = (a, b) -> a.some (a) -> a in b
@@ -100,6 +86,63 @@ get_cells = (vertices, n) ->
     indices = sort_edges_cyclically indices if k is n - 1
     subcells a, k + 1 for a in indices
   subcells [0...vertices.length], 1
+
+get_projector = (space, projection_distance, projection_angle) ->
+  # perspective projection.
+  cos_half = Math.cos(projection_angle / 2)
+  sin_half = Math.sin(projection_angle / 2)
+  rotation = space.rotor [cos_half, sin_half, space.normal, space.no(1)]
+  coeff = 1 / (2 * projection_distance)
+  perspective = space.rotor [1, coeff, space.normal, space.ni(1)]
+  projection = space.gp rotation, perspective
+  (point) -> space.sp projection, point
+
+get_rotator = (space, n, rotation_dimensions, rotation_speed) ->
+  # object integer integer rational -> {multivector:vertex -> multivector:vertex}
+  # rotation
+  # R = cos(angle / 2) + B * sin(angle / 2)
+  bivector_magnitude = Math.sin rotation_speed / 2
+  rotor_data = Array n + 1
+  rotor_data[0] = Math.cos rotation_speed / 2
+  rotors = for a, i in rotation_dimensions
+    continue unless a
+    rotor_data = rotor_data.fill 0, 1
+    rotor_data[i + 1] = bivector_magnitude
+    space.rotor rotor_data
+  (a) -> rotators.reduce ((a, r) -> a.sp(r)), a
+
+triangulate_squares = (indices, n) ->
+  array_map_depth indices, n - 3, (a) ->
+    [[a[0][0], a[0][1], a[2][1]], [a[1][0], a[1][1], a[2][1]]]
+
+sort_vertices = (space, n, vertices, cells) ->
+  # sort edges counter clockwise.
+  # assumes that edges are already sorted cyclically.
+  i = space.pseudoscalar 1
+  p_ref = space.point [0, 0, 2]
+  array_map_depth cells, n - 2, (a) ->
+    [p1, p2, p3] = a.map (a) -> vertices[a]
+    b = p2.subtract(p1).ep(p3.subtract(p1))
+    v = p1.subtract(p_ref)
+    o = b.ip(v)
+    console.log (a for a in p1)
+    console.log (a for a in p2)
+    console.log (a for a in p3)
+
+get_cube = (options) ->
+  n = options.dimensions
+  space = new sph_ga [1, 1, 1], conformal: true
+  rotation_dimensions = options.rotation_dimensions.slice 0, n
+  rotator = get_rotator space, n, rotation_dimensions, options.rotation_speed
+  projector = get_projector space, options.projection_distance, options.projection_angle
+  bit_vertices = [0...2 ** n]
+  vertices = bit_vertices.map (a) -> space.point bits_to_array a, n
+  cells = get_cells bit_vertices, n
+  cells = triangulate_squares cells, n
+  console.log cells
+  return
+  cells = sort_vertices space, n, vertices, cells
+  {space, rotator, projector, vertices}
 
 vertex_shader_source = """
 #version 300 es
@@ -168,115 +211,17 @@ gl_initialize = (canvas) ->
   gl.enable gl.CULL_FACE
   gl
 
-get_projector = (space, projection_distance, projection_angle) ->
-  # perspective projection
-  # r1 = e ** ((angle / 2) * n * eo) = cos(angle / 2) + sin(angle / 2) * n * eo
-  # r2 = e ** ((1 / (2 * d)) * n * eo) = 1 + ep 1 / (2 * d) * n, eo
-  rotors = []
-  ## reflection rotor r1
-  angle = projection_angle
-  normal = space.e1 1
-  eo = space.eo 1
-  scalar_part = space.s Math.cos angle / 2
-  vector_part = normal.gp(eo).gp space.s Math.sin angle / 2
-  rotors.push scalar_part.add vector_part
-  ## inversion rotor r2
-  d = projection_distance
-  scalar_part = space.s 1
-  vector_part = normal.op space.s(1 / (2 * d)).gp(normal), eo
-  rotors.push scalar_part.add vector_part
-  (a) -> rotors.reduce ((a, b) -> a.sp b), a
-
-get_rotator = (space, n, rotation_dimensions, rotation_speed) ->
-  # object integer integer rational -> {versor_object:vertex -> versor_object:vertex}
-  # rotation
-  # R = cos(angle / 2) + B * sin(angle / 2)
-  bivector_magnitude = Math.sin rotation_speed / 2
-  rotor_data = Array n + 1
-  rotor_data[0] = Math.cos rotation_speed / 2
-  rotors = for a, i in rotation_dimensions
-    continue unless a
-    rotor_data = rotor_data.fill 0, 1
-    rotor_data[i + 1] = bivector_magnitude
-    space.new "rotor", rotor_data
-  (a) -> rotators.reduce ((a, r) -> a.sp(r)), a
-
-generate_axis_combinations = (dimension) ->
-  combinations = []
-  generate_combinations = (prefix, start, depth) ->
-    if depth
-      for i in [start...dimension]
-        generate_combinations prefix + (i + 1), i + 1, depth - 1
-    else combinations.push prefix
-  generate_combinations "e", 0, 2
-  combinations
-
-create_versor_space = (n) ->
-  en = [1..(n + 2)]
-  types = [
-    {name: "rotor", bases: ["s"].concat(generate_axis_combinations(n))}
-    {name: "point", bases: en.map((a) -> "e#{a}")}
-    {name: "pseudoscalar", bases: ["e" + en.join("")]}
-    {name: "eo", bases: ["e" + (n + 1)]}
-    {name: "ei", bases: ["e" + (n + 2)]}
-  ]
-  space = versor.create
-    metric: Array(n).fill(1).concat([1, -1])
-    conformal: true
-    types: types
-  space.new = (type, values) ->
-    # allows less values to be passed and sets the rest to zero, which versor.js does not do by default
-    bases_length = @types[type].bases.length
-    if bases_length > values.length
-      values = values.concat Array(bases_length - values.length).fill 0
-    @[type].apply @, values
-  space.point_from_cartesian = (a) ->
-    eic = 0.5 * array_sum a.map (a) -> a * a
-    @new "point", a.concat [1, eic]
-  space.point_to_cartesian = (a) -> a.toArray().slice 0, n
-  space
-
-triangulate_squares = (indices, n) ->
-  array_map_depth indices, n - 3, (a) ->
-    [[a[0][0], a[0][1], a[2][1]], [a[1][0], a[1][1], a[2][1]]]
-
-sort_vertices = (space, n, vertices, cells) ->
-  # sort edges counter clockwise.
-  # assumes that edges are already sorted cyclically.
-  i = space.pseudoscalar 1
-  p_ref = space.point_from_cartesian [0, 0, 2]
-  array_map_depth cells, n - 2, (a) ->
-    console.log "--"
-    [p1, p2, p3] = a.map (a) -> vertices[a]
-    b = p2.sub(p1).op(p3.sub(p1))
-    v = p1.sub(p_ref)
-    o = b.ip(v)
-    console.log space.point_to_cartesian(p1)
-    console.log space.point_to_cartesian(p2)
-    console.log space.point_to_cartesian(p3)
-
-get_cube = (options) ->
-  n = options.dimensions
-  space = create_versor_space n
-  rotator = get_rotator space, n, options.rotation_dimensions.slice(0, n), options.rotation_speed
-  projector = get_projector space, options.projection_distance, options.projection_angle
-  bit_vertices = [0...2 ** n]
-  vertices = bit_vertices.map (a) -> space.point_from_cartesian bits_to_array(a, n)
-  cells = get_cells bit_vertices, n
-  cells = triangulate_squares cells, n
-  cells = sort_vertices space, n, vertices, cells
-  {space, rotator, projector, vertices}
-
 render_rotating_cube = (options) ->
   # object -> interval
   # repeatedly draw and rotate a cube.
   # various vector formats are used:
   # - cell finding: integer bitvectors
-  # - transformations: versor.js vectors
+  # - transformations: sph-ga vectors
   # - vertex sorting: integer arrays
   # - webgl: float32arrays
   n = options.dimensions
-  cube = get_cube n
+  cube = get_cube options
+  return
   gl = gl_initialize options.canvas
   gl.bufferData gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW
   final_vertices = new Float32Array vertices.length

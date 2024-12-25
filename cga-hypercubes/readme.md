@@ -9,5 +9,5 @@
 * license: public domain
 
 uses
-* [versor.js](https://github.com/weshoke/versor.js) (mit license)
+* [sph-ga](https://github.com/sph-mn/sph-ga) (lgpl license)
 * [crel](https://github.com/KoryNunn/crel) (mit license)

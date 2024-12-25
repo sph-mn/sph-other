@@ -8,10 +8,18 @@ ui_class = (function() {
       return label = crel("label", text, content);
     }
 
+    false_if_nan(a) {
+      if (isNaN(a)) {
+        return false;
+      } else {
+        return a;
+      }
+    }
+
     reset() {
       var count, rotation_axes;
       // start rendering with a new configuration
-      this.options.dimensions = Math.max(1, false_if_nan(parseInt(this.dom.dimensions.value)) || this.options.dimensions);
+      this.options.dimensions = Math.max(1, this.false_if_nan(parseInt(this.dom.dimensions.value)) || this.options.dimensions);
       if (7 < this.options.dimensions) {
         alert("unfortunately, the current maximum number of dimensions 7 because of limitations in a support library");
         this.dom.dimensions.value = 7;
@@ -22,7 +30,7 @@ ui_class = (function() {
         alert("increasing dimensions can easily overload the browser. now continuing to create " + count + " vertices", "notice");
         this.warning_shown = true;
       }
-      this.options.rotate_dimensions = this.dom.rotation_axes.map(function(a) {
+      this.options.rotation_dimensions = this.dom.rotation_axes.map(function(a) {
         if (a.checked) {
           return 1;
         } else {
@@ -35,7 +43,7 @@ ui_class = (function() {
       this.dom.rotation_axes.forEach(function(a) {
         return rotation_axes.appendChild(a);
       });
-      this.options.rotation_speed = Math.PI * (false_if_nan(parseFloat(this.dom.rotation_speed.value)) || this.options.rotation_speed);
+      this.options.rotation_speed = Math.PI * (this.false_if_nan(parseFloat(this.dom.rotation_speed.value)) || this.options.rotation_speed);
       this.options.canvas = document.getElementsByTagName("canvas")[0];
       this.cube_interval && clearInterval(this.cube_interval);
       return this.cube_interval = this.draw(this.options);
@@ -48,7 +56,7 @@ ui_class = (function() {
           type: "checkbox",
           value: index
         });
-        a.checked = !(this.options.rotate_dimensions[index] === 0);
+        a.checked = !(this.options.rotation_dimensions[index] === 0);
         a.addEventListener("change", this.reset);
         return a;
       });
@@ -94,7 +102,7 @@ ui_class = (function() {
   ui_class.prototype.options = {
     dimensions: 3,
     // zero elements are not rotated
-    rotate_dimensions: [1, 0, 1, 1],
+    rotation_dimensions: [1, 0, 1, 1],
     // in milliseconds
     refresh: 15000,
     // in radians
