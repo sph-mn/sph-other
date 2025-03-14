@@ -1,6 +1,3 @@
-# hypercube projections
-[cga-hypercubes](cga-hypercubes/) contains code for hypercube rotation animations in the browser and has a dedicated readme.
-
 # emacs
 ## color-theme-sph
 a color theme in three versions: dark, light, monochrome. been happy with it for the last 10, 15 years?
