@@ -104,15 +104,13 @@
     ("[()]" . sph-scheme-bracket-face)))
 
 (defconst sph-scheme-font-lock-keywords-2
-  '(("(\\(define-syntax[^ ]*?\\) +(\\(\\sw+\\)"
-      (1 font-lock-keyword-face) (2 font-lock-preprocessor-face))
-    ("(\\(define[^ ]*?\\) +(\\(\\sw+\\)"
-      (1 font-lock-keyword-face) (2 font-lock-function-name-face))
-    ("(\\(define[^? ]*?\\) +\\(\\sw+\\)"
-      (1 font-lock-keyword-face) (2 font-lock-variable-name-face))
-    ((concat "(\\(" (regexp-opt '("if" "q" "l" "debug-log") t) "\\)\\> ")
-      1 font-lock-builtin-face)
-    ("\\_<#\\(t\\|f\\)\\_>" . font-lock-constant-face)))
+  `(
+    ("(\\(define-syntax[^ ]*?\\) +(\\(\\sw+\\)" (1 font-lock-keyword-face) (2 font-lock-preprocessor-face))
+    ("(\\(define[^ ]*?\\) +(\\(\\sw+\\)" (1 font-lock-keyword-face) (2 font-lock-function-name-face))
+    ("(\\(define[^? ]*?\\) +\\(\\sw+\\)" (1 font-lock-keyword-face) (2 font-lock-variable-name-face))
+    (,(concat "(\\(" (regexp-opt '("if" "q" "l" "debug-log") t) "\\)\\> ") 1 font-lock-builtin-face)
+    ("\\_<#\\(t\\|f\\)\\_>" . font-lock-constant-face)
+  ))
 
 (defvar sph-scheme-font-lock-keywords sph-scheme-font-lock-keywords-1)
 
@@ -142,6 +140,7 @@
 ;;;###autoload
 (define-derived-mode sph-scheme-mode prog-mode "sph-scheme"
   :syntax-table sph-scheme-mode-syntax-table
+  :keymap sph-scheme-mode-map
   (setq-local parse-sexp-ignore-comments t)
   (setq-local indent-line-function #'sph-scheme-indent-line)
   (setq-local comment-start ";")
@@ -164,7 +163,6 @@
     (setq-local sph-scheme-font-lock-keywords sph-scheme-font-lock-keywords-1))
   (font-lock-refresh-defaults)
   (when (fboundp 'font-lock-flush) (font-lock-flush))
-  (when (fboundp 'font-lock-ensure) (font-lock-ensure))
-  (use-local-map sph-scheme-mode-map))
+  (when (fboundp 'font-lock-ensure) (font-lock-ensure)))
 
 (provide 'sph-scheme-mode)
