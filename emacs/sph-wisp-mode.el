@@ -1,3 +1,5 @@
+;;; -*- lexical-binding: nil; -*-
+
 (defun sph-wisp-expand-prefixes (rules)
   (let ((prefixes '("^\\s-*\\(?:([ \t]*\\)?" " : "))
       result)

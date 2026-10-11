@@ -1,3 +1,4 @@
+;;; -*- lexical-binding: nil; -*-
 (require (quote color-theme))
 
 (defun color-theme-sph-dark ()
@@ -19,8 +20,8 @@
         (font-lock-doc-face ((t (:foreground "#666666"))))
         (sph-bracket-face ((t (:foreground "#111111"))))
         (show-paren-match-face ((t (:foreground "#eeeeee" :background "#333333"))))
-        (region ((t (:foreground "#eeeeee" :background nil))))
-        (isearch ((t (:foreground "#eeeeee" :background nil))))
+        (region ((t (:foreground "#eeeeee" :background unspecified))))
+        (isearch ((t (:foreground "#eeeeee" :background unspecified))))
         (lazy-highlight ((t (:foreground "#eeeeee" :background "#222222")))) (mode-line ((t (nil))))
         (minibuffer-prompt ((t (nil))))))))
 
